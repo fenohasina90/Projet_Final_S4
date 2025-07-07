@@ -7,14 +7,38 @@ class Pret
     public static function getAll()
     {
         $db = getDB();
-        $stmt = $db->query("SELECT * FROM pret");
+        $stmt = $db->query("SELECT * FROM prets ORDER BY date_debut DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public static function getAllTypePret()
     {
         $db = getDB();
         $stmt = $db->query("SELECT * FROM types_pret");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function getById($pretId)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT * FROM prets WHERE pret_id = ?");
+        $stmt->execute([$pretId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function updatePretStatus($pretId, $statut)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("UPDATE prets SET statut = ? WHERE pret_id = ?");
+        return $stmt->execute([$statut, $pretId]);
+    }
+
+    public static function getTypePretById($typePretId)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT * FROM types_pret WHERE type_pret_id = ?");
+        $stmt->execute([$typePretId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public static function createPret($data)
@@ -33,11 +57,11 @@ class Pret
         return $db->lastInsertId();
     }
 
-    public static function createHistoriquePret($data)
+    public static function createHistoriquePret($pretId, $mois, $montantMensualite)
     {
         $db = getDB();
         $stmt = $db->prepare("INSERT INTO historique_pret (pret_id, mois, montant_mensualite) VALUES (?, ?, ?)");
-        return $stmt->execute([$data->pret_id, $data->mois, $data->montant_mensualite]);
+        return $stmt->execute([$pretId, $mois, $montantMensualite]);
     }
 
     public static function genererHistoriquePret($typeAmortissement, $pretId, $montant, $duree, $tauxAnnuel, $dateDebut) {
@@ -47,7 +71,7 @@ class Pret
                 $mensualites = $details['mensualites'];
                 break;
     
-            case 'MENSUALITES_FIXES':
+            case 'MENSALITES_FIXES':
                 $details = self::mensualites_fixes($montant, $tauxAnnuel, $duree);
                 $mensualites = array_fill(0, $duree, $details['mensualite']);
                 break;
@@ -124,5 +148,24 @@ class Pret
             'total_interets' => round($total_interets, 2),
             'total_paye' => round($total_paye, 2)
         ];
+    }
+
+    public static function getHistorique($clientId = null)
+    {
+        $db = getDB();
+        $sql = "SELECT hp.*, p.client_id, p.montant, p.duree_mois, p.taux_applique 
+                FROM historique_pret hp 
+                JOIN prets p ON hp.pret_id = p.pret_id 
+                WHERE p.statut = 'Approuvé'";
+        
+        if ($clientId) {
+            $sql .= " AND p.client_id = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$clientId]);
+        } else {
+            $stmt = $db->query($sql);
+        }
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
