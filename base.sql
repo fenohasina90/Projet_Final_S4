@@ -55,16 +55,15 @@ CREATE TABLE prets (
     pret_id INT AUTO_INCREMENT PRIMARY KEY,
     client_id INT,
     type_pret_id INT,
-    montant DECIMAL(12, 2) NOT NULL,
+    montant DECIMAL(12,2) NOT NULL,
     date_debut DATE DEFAULT CURRENT_DATE,
     duree_mois INT NOT NULL,
-    statut VARCHAR(20),
-    mensualite DECIMAL(10, 2),
-    taux_applique DECIMAL(5, 2) NOT NULL,
+    taux_applique DECIMAL(5,2) NOT NULL,
     FOREIGN KEY (client_id) REFERENCES clients(client_id),
-    FOREIGN KEY (type_pret_id) REFERENCES types_pret(type_pret_id),
-    CHECK (statut IN ('En attente', 'Approuvé', 'Refusé', 'Remboursé'))
+    FOREIGN KEY (type_pret_id) REFERENCES types_pret(type_pret_id)
 );
+
+
 
 CREATE TABLE amortissements (
     amortissement_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -105,3 +104,23 @@ CREATE TABLE taux_interet (
     taux_annuel DECIMAL(5, 2) NOT NULL,
     date_mise_a_jour DATE DEFAULT CURRENT_DATE
 );
+
+CREATE TABLE statuts_pret (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pret_id INT,
+    statut VARCHAR(20),
+    date_statut DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pret_id) REFERENCES prets(pret_id),
+    CHECK (statut IN ('En attente', 'Approuve', 'Refuse', 'Rembourse'))
+);
+
+
+CREATE TABLE historique_pret (
+    historique_id INT AUTO_INCREMENT PRIMARY KEY,
+    pret_id INT,
+    mois DATE NOT NULL,
+    montant_mensualite DECIMAL(10, 2),
+    FOREIGN KEY (pret_id) REFERENCES prets(pret_id)
+);
+    -- statut_paiement VARCHAR(20) DEFAULT 'Non payé',
+    -- date_paiement DATE,  -- date réelle de paiement

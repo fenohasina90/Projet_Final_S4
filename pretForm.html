@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <form action="" method="post">
+        <select name="type_pret" id="typePretSelect">
+            <option value="">Chargement des types de prêt...</option>
+        </select>
+    </form>
+
+    <script>
+        const apiBase = "http://localhost/tp-flightphp-crud/Projet_Final_S4/ws";
+        let chartInstance = null;
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            // Appel AJAX pour récupérer les types de prêt
+            ajax('GET', '/type-pret', null, function(response) {
+                const select = document.getElementById('typePretSelect');
+                
+                // Vider le select
+                select.innerHTML = '';
+                
+                // Option par défaut
+                select.innerHTML = '<option value="">Sélectionnez un type de prêt</option>';
+                
+                // Boucler sur les résultats (response est déjà le tableau direct)
+                response.forEach(typePret => {
+                    const option = document.createElement('option');
+                    option.value = typePret.type_pret_id; // Attention au nom de champ exact
+                    option.textContent = `${typePret.nom} (${typePret.taux_annuel}%) - ${typePret.type_amortissement}`;
+                    select.appendChild(option);
+                });
+            });
+        });
+        
+        function ajax(method, url, data, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(JSON.parse(xhr.responseText));
+                    } else {
+                        console.error('Erreur AJAX:', xhr.status);
+                        document.getElementById('typePretSelect').innerHTML = 
+                            '<option value="">Erreur de chargement</option>';
+                    }
+                }
+            };
+            xhr.send(data);
+        }
+    
+        
+      </script>
+</body>
+</html>
