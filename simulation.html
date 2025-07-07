@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulation de Prêt</title>
+</head>
+<body>
+  <h2>Simulation de Prêt à Mensualités Fixes</h2>
+
+<form id="simuForm" onsubmit="event.preventDefault(); simuler();">
+    <label>Type de prêt :</label>
+    <select id="type_pret" required></select><br><br>
+    <label>Montant :</label>
+    <input type="number" id="montant" required><br><br>
+    <label>Durée (mois) :</label>
+    <input type="number" id="duree" required><br><br>
+    <label>Taux annuel (%) :</label>
+    <input type="number" id="taux_annuel" step="0.01" required readonly><br><br>
+    <button type="submit">Simuler</button>
+    <button type="valider">valider</button>
+  </form>
+  <div id="details">
+    <p><strong>Montant :</strong> <span id="aff_montant"></span> Ar</p>
+    <p><strong>Durée :</strong> <span id="aff_duree"></span> mois</p>
+    <p><strong>Taux Annuel :</strong> <span id="aff_taux"></span> %</p>
+    <p><strong>Type de prêt :</strong> <span id="aff_type_pret"></span></p>
+    <p><strong>ID du type de prêt :</strong> <span id="aff_type_pret_id"></span></p>
+  </div>
+  <div id="resultat"></div>
+
+  
+  <script>
+  const apiBase = "http://localhost/Projet_Final_S4/ws";
+  let typesPret = [];
+  
+  function ajax(method, url, data, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, apiBase + url, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          callback(JSON.parse(xhr.responseText));
+        } else {
+          document.getElementById('resultat').textContent = "Erreur lors de la simulation";
+        }
+      }
+    };
+    xhr.send(data);
+  }
+  
+  window.onload = function() {
+    ajax("GET", "/type-pret", null, (response) => {
+      typesPret = response;
+      const select = document.getElementById('type_pret');
+      select.innerHTML = "";
+      response.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.type_pret_id; 
+        option.textContent = type.nom;
+        option.setAttribute('data-taux', type.taux_annuel);
+        select.appendChild(option);
+      });
+
+      if (response.length > 0) {
+        document.getElementById('taux_annuel').value = response[0].taux_annuel;
+      }
+    });
+
+    document.getElementById('type_pret').addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      document.getElementById('taux_annuel').value = selected.getAttribute('data-taux');
+    });
+  };
+  
+  function simuler() {
+  const montant = document.getElementById('montant').value;
+  const duree = document.getElementById('duree').value;
+  const taux_annuel = document.getElementById('taux_annuel').value;
+  const type_pret = document.getElementById('type_pret').value;
+  const type_pret_select = document.getElementById('type_pret');
+  const selected_option = type_pret_select.options[type_pret_select.selectedIndex];
+
+  // Debug pour voir les valeurs
+  console.log('Type pret value:', type_pret);
+  console.log('Selected option:', selected_option);
+  console.log('Selected option text:', selected_option ? selected_option.textContent : 'null');
+
+  document.getElementById('aff_montant').textContent = montant;
+  document.getElementById('aff_duree').textContent = duree;
+  document.getElementById('aff_taux').textContent = taux_annuel;
+  document.getElementById('aff_type_pret').textContent = selected_option ? selected_option.textContent : 'Non sélectionné';
+  document.getElementById('aff_type_pret_id').textContent = type_pret || 'Non sélectionné';
+
+  const data = `montant=${encodeURIComponent(montant)}&duree=${encodeURIComponent(duree)}&taux_annuel=${encodeURIComponent(taux_annuel)}`;
+  
+  ajax("POST", "/simuler-mensualite-fixe", data, (response) => {
+    document.getElementById('resultat').textContent = "Mensualité : " + response.mensualite + " Ar";
+  });
+  }
+
+  function validerpret(){
+    const montant = document.getElementById('montant').value;
+    const duree = document.getElementById('duree').value;
+    const taux_annuel = document.getElementById('taux_annuel').value;
+    const type_pret = document.getElementById('type_pret').value;
+
+    if (!montant || !duree || !taux_annuel || !type_pret) {
+      alert("Veuillez remplir tous les champs.");
+      return;
+    }
+
+    const data = `montant=${encodeURIComponent(montant)}&duree=${encodeURIComponent(duree)}&taux_annuel=${encodeURIComponent(taux_annuel)}&type_pret=${encodeURIComponent(type_pret)}`;
+    
+    ajax("POST", "/valider-pret", data, (response) => {
+      if (response.success) {
+        alert("Prêt validé avec succès !");
+      } else {
+        alert("Erreur lors de la validation du prêt : " + response.message);
+      }
+    });
+  }
+
+
+
+
+  </script>
+</body>
+</html>

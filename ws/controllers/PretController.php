@@ -37,12 +37,21 @@ class PretController {
 
     public static function createPret() {
         $data = Flight::request()->data;
-        $id = Pret::createPret($data);
-        Flight::json(['message' => 'pret ajouté', 'id' => $id]);
+        try {
+            $id = Pret::createPret($data);
+            Flight::json(['success' => true, 'message' => 'Prêt créé avec succès', 'id' => $id]);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
-    public static function createSimulation(){
-        
+    public static function simulerMensualiteFixe() {
+        $data = Flight::request()->data;
+        $montant = $data['montant'];
+        $taux_annuel = $data['taux_annuel'];
+        $duree = $data['duree'];
+        $result = Pret::mensualites_fixes($montant, $taux_annuel, $duree);
+        Flight::json(['mensualite' => $result['mensualite']]);
     }
 }
 

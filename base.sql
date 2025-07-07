@@ -59,9 +59,12 @@ CREATE TABLE prets (
     date_debut DATE DEFAULT CURRENT_DATE,
     duree_mois INT NOT NULL,
     taux_applique DECIMAL(5,2) NOT NULL,
+    assurance INT DEFAULT 0,
     FOREIGN KEY (client_id) REFERENCES clients(client_id),
     FOREIGN KEY (type_pret_id) REFERENCES types_pret(type_pret_id)
 );
+
+alter Table prets add COLUMN assurance INT DEFAULT 0;
 
 
 
