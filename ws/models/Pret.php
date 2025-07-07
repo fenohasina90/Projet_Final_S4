@@ -20,12 +20,19 @@ class Pret
     public static function createPret($data)
     {
         $db = getDB();
-        $stmt = $db->prepare("INSERT INTO prets (client_id, type_pret_id, montant, date_debut, duree_mois, taux_applique) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$data->client, $data->type_pret, $data->montant, $data->date_debut, $data->duree, $data->statut, $data->taux_applique]);
+        $stmt = $db->prepare("INSERT INTO prets (client_id, type_pret_id, montant, date_debut, duree_mois,statut, taux_applique, assurance) VALUES (?, ?, ?, CURRENT_DATE,?,?, ?, ?)");
+        $stmt->execute([
+            $data['client_id'], 
+            $data['type_pret_id'], 
+            $data['montant'], 
+            $data['duree_mois'], 
+            $data['statut'],
+            $data['taux_applique'],
+            $data['assurance']
+        ]);
         return $db->lastInsertId();
     }
 
-    
     public static function createHistoriquePret($data)
     {
         $db = getDB();
