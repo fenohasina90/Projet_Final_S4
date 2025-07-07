@@ -13,10 +13,19 @@ CREATE TABLE comptes (
     compte_id SERIAL PRIMARY KEY,
     client_id INT REFERENCES clients(client_id),
     type_compte VARCHAR(50) CHECK (type_compte IN ('Courant', 'Épargne', 'Entreprise')),
-    solde DECIMAL(12, 2) DEFAULT 0.00,
     date_ouverture DATE DEFAULT CURRENT_DATE,
     iban VARCHAR(34) UNIQUE
 );
+
+CREATE TABLE soldes (
+    solde_id SERIAL PRIMARY KEY,
+    compte_id INT REFERENCES comptes(compte_id),
+    date_solde DATE NOT NULL,
+    montant DECIMAL(12, 2) NOT NULL,
+    type_solde VARCHAR(20) CHECK (type_solde IN ('Crédit', 'Débit')),
+    description TEXT
+);
+
 CREATE TABLE types_pret (
     type_pret_id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -28,10 +37,12 @@ CREATE TABLE types_pret (
     type_amortissement VARCHAR(20) CHECK (type_amortissement IN (
         'CONSTANT',         -- Amortissement constant (mensualités décroissantes)
         'MENSALITES_FIXES', -- Mensualités fixes (classique)
-        'IN_FINE',          -- Non amortissable (capital final)
+        'NON_AMORTISSABLE',          -- Non amortissable (capital final)
         'MODULABLE'         -- Mensualités variables
     )) NOT NULL
 );
+
+
 CREATE TABLE prets (
     pret_id SERIAL PRIMARY KEY,
     client_id INT REFERENCES clients(client_id),
@@ -69,6 +80,7 @@ CREATE TABLE transactions (
     description TEXT,
     pret_id INT NULL REFERENCES prets(pret_id)
 );
+
 CREATE TABLE taux_interet (
     taux_id SERIAL PRIMARY KEY,
     type_produit VARCHAR(50) NOT NULL,
