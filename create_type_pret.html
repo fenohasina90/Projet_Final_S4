@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestion des types de prêt</title>
+</head>
+<body>
+  <h1>Gestion des types de prêt</h1>
+  <div>
+    <input type="text" id="nom" placeholder="Nom du prêt"><br>
+    <input type="number" id="taux_annuel" placeholder="Taux annuel (%)"><br>
+    <input type="number" id="duree_max_mois" placeholder="Durée max (mois)"><br>
+    <input type="number" id="montant_min" placeholder="Montant minimum"><br>
+    <input type="number" id="montant_max" placeholder="Montant maximum"><br>
+    <input type="number" id="frais_dossier" placeholder="Frais de dossier (%)"><br>
+
+    <select id="type_amortissement">
+      <option value="CONSTANT">CONSTANT</option>
+      <option value="MENSUALITES_FIXES">MENSUALITES_FIXES</option>
+      <option value="NON_AMORTISSABLE">NON_AMORTISSABLE</option>
+      <option value="MODULABLE">MODULABLE</option>
+    </select><br><br>
+
+    <button onclick="ajouter()">Ajouter</button>
+  </div>
+
+  <script>
+    const apiBase = "http://localhost:8000/tp-flightphp-crud/Projet_final_S4/ws";
+
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          callback(JSON.parse(xhr.responseText));
+        }
+      };
+      xhr.send(data);
+    }
+
+    function ajouter() {
+      const nom = document.getElementById("nom").value;
+      const taux_annuel = document.getElementById("taux_annuel").value;
+      const duree_max_mois = document.getElementById("duree_max_mois").value;
+      const montant_min = document.getElementById("montant_min").value;
+      const montant_max = document.getElementById("montant_max").value;
+      const frais_dossier = document.getElementById("frais_dossier").value;
+      const type_amortissement = document.getElementById("type_amortissement").value;
+
+      const data = 
+        `nom=${encodeURIComponent(nom)}&` +
+        `taux_annuel=${encodeURIComponent(taux_annuel)}&` +
+        `duree_max_mois=${encodeURIComponent(duree_max_mois)}&` +
+        `montant_min=${encodeURIComponent(montant_min)}&` +
+        `montant_max=${encodeURIComponent(montant_max)}&` +
+        `frais_dossier=${encodeURIComponent(frais_dossier)}&` +
+        `type_amortissement=${encodeURIComponent(type_amortissement)}`;
+
+      ajax("POST", "/type_pret", data, (response) => {
+        alert("Type de prêt créé avec l’ID : " + response.id);
+      });
+    }
+  </script>
+</body>
+</html>
