@@ -53,6 +53,53 @@ class PretController {
         $result = Pret::mensualites_fixes($montant, $taux_annuel, $duree);
         Flight::json(['mensualite' => $result['mensualite']]);
     }
+
+    public static function approvePret() {
+        $data = Flight::request()->data;
+        try {
+            $pretId = $data['pret_id'];
+            $statut = $data['statut'];
+            
+            // Mettre à jour le statut du prêt
+            Pret::updatePretStatus($pretId, $statut);
+            
+            // Si approuvé, générer l'historique des mensualités
+            if ($statut === 'Approuvé') {
+                $pret = Pret::getById($pretId);
+                if ($pret) {
+                    // Récupérer le type de prêt pour déterminer le type d'amortissement
+                    $typePret = Pret::getTypePretById($pret['type_pret_id']);
+                    $typeAmortissement = $typePret['type_amortissement'];
+                    
+                    // Générer l'historique des mensualités
+                    Pret::genererHistoriquePret(
+                        $typeAmortissement,
+                        $pretId,
+                        $pret['montant'],
+                        $pret['duree_mois'],
+                        $pret['taux_applique'],
+                        $pret['date_debut']
+                    );
+                }
+            }
+            
+            Flight::json(['success' => true, 'message' => 'Prêt approuvé avec succès']);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function getHistorique() {
+        $request = Flight::request();
+        $clientId = $request->query->client_id;
+        
+        try {
+            $historique = Pret::getHistorique($clientId);
+            Flight::json($historique);
+        } catch (Exception $e) {
+            Flight::json(['error' => $e->getMessage()]);
+        }
+    }
 }
 
 ?>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Validation des Prêts</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .btn-approve {
+      background-color: #4CAF50;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-approve:hover {
+      background-color: #45a049;
+    }
+    .filter-section {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .status-pending {
+      color: #ff9800;
+      font-weight: bold;
+    }
+    .status-approved {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Validation des Prêts</h2>
+  
+  <div class="filter-section">
+    <label>Filtrer par client :</label>
+    <select id="filter-client">
+      <option value="">Tous les clients</option>
+    </select>
+    <button onclick="loadPrets()">Filtrer</button>
+  </div>
+
+  <table id="prets-table">
+    <thead>
+      <tr>
+        <th>ID Prêt</th>
+        <th>Client</th>
+        <th>Type de Prêt</th>
+        <th>Montant</th>
+        <th>Durée (mois)</th>
+        <th>Taux (%)</th>
+        <th>Assurance</th>
+        <th>Date de début</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="prets-tbody">
+    </tbody>
+  </table>
+
+  <div id="message"></div>
+
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    let allPrets = [];
+    let allClients = [];
+
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de la requête";
+          }
+        }
+      };
+      xhr.send(data);
+    }
+
+    // Charger les clients pour le filtre
+    function loadClients() {
+      ajax("GET", "/clients", null, (response) => {
+        allClients = response;
+        const select = document.getElementById('filter-client');
+        select.innerHTML = '<option value="">Tous les clients</option>';
+        response.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client.client_id;
+          option.textContent = client.nom;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    // Charger tous les prêts
+    function loadPrets() {
+      ajax("GET", "/prets", null, (response) => {
+        allPrets = response;
+        displayPrets(response);
+      });
+    }
+
+    // Afficher les prêts avec filtre
+    function displayPrets(prets) {
+      const filterClient = document.getElementById('filter-client').value;
+      let filteredPrets = prets;
+      
+      if (filterClient) {
+        filteredPrets = prets.filter(pret => pret.client_id == filterClient);
+      }
+
+      const tbody = document.getElementById('prets-tbody');
+      tbody.innerHTML = '';
+
+      filteredPrets.forEach(pret => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${pret.pret_id}</td>
+          <td>${getClientName(pret.client_id)}</td>
+          <td>${getTypePretName(pret.type_pret_id)}</td>
+          <td>${pret.montant} Ar</td>
+          <td>${pret.duree_mois}</td>
+          <td>${pret.taux_applique}%</td>
+          <td>${pret.assurance}</td>
+          <td>${pret.date_debut}</td>
+          <td class="status-${pret.statut === 'En attente' ? 'pending' : 'approved'}">${pret.statut}</td>
+          <td>
+            ${pret.statut === 'En attente' ? 
+              `<button class="btn-approve" onclick="approvePret(${pret.pret_id})">Approuver</button>` : 
+              'Déjà approuvé'
+            }
+          </td>
+        `;
+      });
+    }
+
+    // Obtenir le nom du client
+    function getClientName(clientId) {
+      const client = allClients.find(c => c.client_id == clientId);
+      return client ? client.nom : 'Client inconnu';
+    }
+
+    // Obtenir le nom du type de prêt
+    function getTypePretName(typePretId) {
+      // On pourrait charger les types de prêt aussi, pour l'instant on affiche l'ID
+      return `Type ${typePretId}`;
+    }
+
+    // Approuver un prêt
+    function approvePret(pretId) {
+      if (confirm('Êtes-vous sûr de vouloir approuver ce prêt ?')) {
+        const data = `pret_id=${encodeURIComponent(pretId)}&statut=Approuvé`;
+        ajax("POST", "/approve-pret", data, (response) => {
+          if (response.success) {
+            document.getElementById('message').textContent = "Prêt approuvé avec succès !";
+            loadPrets(); // Recharger la liste
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de l'approbation : " + response.message;
+          }
+        });
+      }
+    }
+
+    // Initialisation au chargement de la page
+    window.onload = function() {
+      loadClients();
+      loadPrets();
+    };
+  </script>
+</body>
+</html> 
