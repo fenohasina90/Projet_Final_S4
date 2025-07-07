@@ -6,7 +6,6 @@ $db = getDB(); // Connexion globale à la base
 
 require 'routes/etudiant_routes.php';
 require 'routes/Pret_routes.php';
-require 'routes/fonds_routes.php';
-require 'routes/comptes_routes.php';
+require 'routes/Utilisateurs_route.php';
 
 Flight::start();

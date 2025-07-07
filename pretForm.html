@@ -1,62 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <title>Création d'un Prêt</title>
 </head>
 <body>
+  <h2>Créer un nouveau prêt</h2>
+  <form id="pretForm" onsubmit="event.preventDefault(); validerpret();">
+    <label>Client :</label>
+    <select id="client" required></select><br><br>
+    <label>Type de prêt :</label>
+    <select id="type_pret" required></select><br><br>
+    <label>Montant :</label>
+    <input type="number" id="montant" required><br><br>
+    <label>Durée (mois) :</label>
+    <input type="number" id="duree" required><br><br>
+    <label>Taux annuel (%) :</label>
+    <input type="number" id="taux_annuel" step="0.01" required readonly><br><br>
+    <label>Assurance :</label>
+    <input type="text" id="assurance" required><br><br>
+    <input type="hidden" value="En attente" id="statut">
+    <button type="submit">Valider</button>
+  </form>
+  <div id="message"></div>
 
-    <form action="" method="post">
-        <select name="type_pret" id="typePretSelect">
-            <option value="">Chargement des types de prêt...</option>
-        </select>
-    </form>
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    let typesPret = [];
 
-    <script>
-        const apiBase = "http://localhost/Projet_Final_S4/ws";
-        let chartInstance = null;
-    
-        document.addEventListener('DOMContentLoaded', function() {
-            // Appel AJAX pour récupérer les types de prêt
-            ajax('GET', '/type-pret', null, function(response) {
-                const select = document.getElementById('typePretSelect');
-                
-                // Vider le select
-                select.innerHTML = '';
-                
-                // Option par défaut
-                select.innerHTML = '<option value="">Sélectionnez un type de prêt</option>';
-                
-                // Boucler sur les résultats (response est déjà le tableau direct)
-                response.forEach(typePret => {
-                    const option = document.createElement('option');
-                    option.value = typePret.type_pret_id; // Attention au nom de champ exact
-                    option.textContent = `${typePret.nom} (${typePret.taux_annuel}%) - ${typePret.type_amortissement}`;
-                    select.appendChild(option);
-                });
-            });
-        });
-        
-        function ajax(method, url, data, callback) {
-            const xhr = new XMLHttpRequest();
-            xhr.open(method, apiBase + url, true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        callback(JSON.parse(xhr.responseText));
-                    } else {
-                        console.error('Erreur AJAX:', xhr.status);
-                        document.getElementById('typePretSelect').innerHTML = 
-                            '<option value="">Erreur de chargement</option>';
-                    }
-                }
-            };
-            xhr.send(data);
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de la requête";
+          }
         }
-    
-        
-      </script>
+      };
+      xhr.send(data);
+    }
+
+    window.onload = function() {
+      ajax("GET", "/type-pret", null, (response) => {
+        typesPret = response;
+        const select = document.getElementById('type_pret');
+        select.innerHTML = "";
+        response.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type.type_pret_id;
+          option.textContent = type.nom;
+          option.setAttribute('data-taux', type.taux_annuel);
+          select.appendChild(option);
+        });
+        if (response.length > 0) {
+          document.getElementById('taux_annuel').value = response[0].taux_annuel;
+        }
+      });
+
+      ajax("GET", "/clients", null, (response) => {
+        const select = document.getElementById('client');
+        select.innerHTML = "";
+        response.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client.client_id;
+          option.textContent = client.nom;
+          select.appendChild(option);
+        });
+      });
+
+      document.getElementById('type_pret').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        document.getElementById('taux_annuel').value = selected.getAttribute('data-taux');
+      });
+    };
+
+    function validerpret() {
+      const client = document.getElementById('client').value;
+      const montant = document.getElementById('montant').value;
+      const duree = document.getElementById('duree').value;
+      const taux_annuel = document.getElementById('taux_annuel').value;
+      const type_pret = document.getElementById('type_pret').value;
+      const assurance = document.getElementById('assurance').value;
+      const statut = document.getElementById('statut').value
+
+      if (!client || !montant || !duree || !taux_annuel || !type_pret || !assurance) {
+        alert("Veuillez remplir tous les champs.");
+        return;
+      }
+
+      const data = `client_id=${encodeURIComponent(client)}&type_pret_id=${encodeURIComponent(type_pret)}&montant=${encodeURIComponent(montant)}&duree_mois=${encodeURIComponent(duree)}&taux_applique=${encodeURIComponent(taux_annuel)}&assurance=${encodeURIComponent(assurance)}&statut=${encodeURIComponent(statut)}`;
+      ajax("POST", "/valider-pret", data, (response) => {
+        if (response.success) {
+          document.getElementById('message').textContent = "Prêt créé avec succès !";
+        } else {
+          document.getElementById('message').textContent = "Erreur lors de la création du prêt : " + response.message;
+        }
+      });
+    }
+  </script>
 </body>
 </html>

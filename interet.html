@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Intérêts par Mois</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #eee;
+        }
+        #chart-container {
+            width: 70%;
+            margin-top: 40px;
+        }
+    </style>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <h2>Intérêts Gagnés par Mois</h2>
+
+    <label for="date1">Date Début :</label>
+    <input type="date" id="date1">
+
+    <label for="date2">Date Fin :</label>
+    <input type="date" id="date2">
+
+    <button onclick="getInteret()">Afficher</button>
+
+    <table id="table-interet">
+        <thead>
+            <tr>
+                <th>Mois</th>
+                <th>Année</th>
+                <th>Intérêt Gagné</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Conteneur pour le graphique -->
+    <div id="chart-container">
+        <canvas id="interetChart"></canvas>
+    </div>
+
+    <script>
+        const apiBase = "http://localhost/Projet_Final_S4/ws";
+        let chartInstance = null;
+
+        function ajax(method, url, data, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open(method, apiBase + url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        callback(JSON.parse(xhr.responseText));
+                    } else {
+                        alert("Erreur " + xhr.status + " : " + xhr.responseText);
+                    }
+                }
+            };
+            xhr.send(data);
+        }
+
+        function getInteret() {
+            const date1 = document.getElementById("date1").value;
+            const date2 = document.getElementById("date2").value;
+            const url = `/interet?date1=${encodeURIComponent(date1)}&date2=${encodeURIComponent(date2)}`;
+
+            ajax("GET", url, null, (response) => {
+                const tbody = document.querySelector("#table-interet tbody");
+                tbody.innerHTML = ""; // Clear table
+
+                const labels = [];
+                const data = [];
+
+                if (response.length === 0) {
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = "Aucune donnée";
+                    row.insertCell();
+                    row.insertCell();
+                } else {
+                    response.forEach(entry => {
+                        const row = tbody.insertRow();
+                        let mois = "-", annee = "-";
+                        if (entry.periode) {
+                            const [anneeVal, moisVal] = entry.periode.split('-');
+                            mois = moisVal;
+                            annee = anneeVal;
+                        }
+                        row.insertCell().textContent = mois;
+                        row.insertCell().textContent = annee;
+                        const interetVal = Number(entry.interet_gagne) || 0;
+                        row.insertCell().textContent = interetVal.toFixed(2) + " Ar";
+
+                        labels.push(`${mois}/${annee}`);
+                        data.push(interetVal);
+                    });
+
+                    drawChart(labels, data);
+                }
+            });
+        }
+
+
+        </script>
+        <script src="interet.js" defer></script>
+</body>
+</html>

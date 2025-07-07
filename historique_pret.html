@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Historique des Prêts</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .filter-section {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .pret-details {
+      background-color: #e8f5e8;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Historique des Prêts Approuvés</h2>
+  
+  <div class="filter-section">
+    <label>Filtrer par client :</label>
+    <select id="filter-client">
+      <option value="">Tous les clients</option>
+    </select>
+    <button onclick="loadHistorique()">Filtrer</button>
+    <button>EXPORT</button>
+  </div>
+
+  <div id="historique-container">
+    <!-- L'historique sera affiché ici -->
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    let allClients = [];
+
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de la requête";
+          }
+        }
+      };
+      xhr.send(data);
+    }
+
+    // Charger les clients pour le filtre
+    function loadClients() {
+      ajax("GET", "/clients", null, (response) => {
+        allClients = response;
+        const select = document.getElementById('filter-client');
+        select.innerHTML = '<option value="">Tous les clients</option>';
+        response.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client.client_id;
+          option.textContent = client.nom;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    // Charger l'historique des prêts
+    function loadHistorique() {
+      const filterClient = document.getElementById('filter-client').value;
+      const url = filterClient ? `/historique-pret?client_id=${filterClient}` : '/historique-pret';
+      
+      ajax("GET", url, null, (response) => {
+        displayHistorique(response);
+      });
+    }
+
+    // Afficher l'historique
+    function displayHistorique(historique) {
+      const container = document.getElementById('historique-container');
+      container.innerHTML = '';
+
+      if (historique.length === 0) {
+        container.innerHTML = '<p>Aucun historique trouvé.</p>';
+        return;
+      }
+
+      // Grouper par prêt
+      const pretsGroupes = {};
+      historique.forEach(entry => {
+        if (!pretsGroupes[entry.pret_id]) {
+          pretsGroupes[entry.pret_id] = [];
+        }
+        pretsGroupes[entry.pret_id].push(entry);
+      });
+
+      // Afficher chaque prêt avec ses mensualités
+      Object.keys(pretsGroupes).forEach(pretId => {
+        const mensualites = pretsGroupes[pretId];
+        const pret = mensualites[0]; // Première entrée pour les infos du prêt
+
+        const pretDiv = document.createElement('div');
+        pretDiv.className = 'pret-details';
+        pretDiv.innerHTML = `
+          <h3>Prêt ID: ${pret.pret_id} - Client: ${getClientName(pret.client_id)}</h3>
+          <p><strong>Montant:</strong> ${pret.montant} Ar | <strong>Durée:</strong> ${pret.duree_mois} mois | <strong>Taux:</strong> ${pret.taux_applique}%</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th>Mensualité</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mensualites.map(m => `
+                <tr>
+                  <td>${m.mois}</td>
+                  <td>${m.montant_mensualite} Ar</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        container.appendChild(pretDiv);
+      });
+    }
+
+    // Obtenir le nom du client
+    function getClientName(clientId) {
+      const client = allClients.find(c => c.client_id == clientId);
+      return client ? client.nom : 'Client inconnu';
+    }
+
+    // Initialisation au chargement de la page
+    window.onload = function() {
+      loadClients();
+      loadHistorique();
+    };
+  </script>
+</body>
+</html> 
