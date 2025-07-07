@@ -118,4 +118,6 @@ class Pret
             'total_paye' => round($total_paye, 2)
         ];
     }
+
+    
 }
