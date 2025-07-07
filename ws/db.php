@@ -1,7 +1,7 @@
 <?php
 function getDB() {
     $host = 'localhost';
-    $dbname = 'final_S4';
+    $dbname = 'final_s4';
     $username = 'root';
     $password = '';
 
