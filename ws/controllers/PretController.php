@@ -8,26 +8,37 @@ class PretController {
         Flight::json($prets);
     }
 
-    public static function getById($id) {
-        $pret = Pret::getById($id);
+    public static function getAllType() {
+        $pret = Pret::getAllTypePret();
         Flight::json($pret);
     }
 
-    public static function create() {
-        $data = Flight::request()->data;
-        $id = Pret::create($data);
-        Flight::json(['message' => 'Prêt ajouté', 'id' => $id]);
-    }
+    // public static function getById($id) {
+    //     $pret = Pret::getById($id);
+    //     Flight::json($pret);
+    // }
 
-    public static function update($id) {
-        $data = Flight::request()->data;
-        Pret::update($id, $data);
-        Flight::json(['message' => 'Prêt modifié']);
-    }
+    // public static function create() {
+    //     $data = Flight::request()->data;
+    //     $id = Pret::create($data);
+    //     Flight::json(['message' => 'Prêt ajouté', 'id' => $id]);
+    // }
 
-    public static function delete($id) {
-        Pret::delete($id);
-        Flight::json(['message' => 'Prêt supprimé']);
+    // public static function update($id) {
+    //     $data = Flight::request()->data;
+    //     Pret::update($id, $data);
+    //     Flight::json(['message' => 'Prêt modifié']);
+    // }
+
+    // public static function delete($id) {
+    //     Pret::delete($id);
+    //     Flight::json(['message' => 'Prêt supprimé']);
+    // }
+
+    public static function createPret() {
+        $data = Flight::request()->data;
+        $id = Pret::createPret($data);
+        Flight::json(['message' => 'pret ajouté', 'id' => $id]);
     }
 }
 
