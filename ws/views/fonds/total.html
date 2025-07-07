@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Totaux des Fonds</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <nav>
+      <a href="ajout.html">Ajout de fonds</a> |
+      <a href="debit.html">Débit de fonds</a> |
+      <a href="liste.html">Liste des dépôts</a> |
+      <a href="total.html">Total des fonds</a>
+    </nav>
+    <div class="main-content">
+      <h1>Solde total des comptes</h1>
+      
+      <div style="margin-bottom: 1rem; text-align: center;">
+        <button onclick="chargerTotaux()" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+          Actualiser les totaux
+        </button>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>ID Compte</th>
+            <th>Client</th>
+            <th>Type de Compte</th>
+            <th>Solde</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-totaux">
+          <tr>
+            <td colspan="4" style="text-align: center; color: #7f8c8d; font-style: italic;">
+              Chargement des données...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 2rem 0; text-align: center;">
+        <h2>Total général : <span id="total-general">Calcul en cours...</span></h2>
+      </div>
+      
+      <div id="totaux-details"></div>
+    </div>
+  </div>
+  
+  <script>
+    function chargerTotaux() {
+      var tbody = document.getElementById('tbody-totaux');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #7f8c8d; font-style: italic;">Chargement des données...</td></tr>';
+      
+      document.getElementById('total-general').textContent = 'Calcul en cours...';
+      document.getElementById('totaux-details').innerHTML = '';
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/Final/Projet_Final_S4/ws/fonds/total', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            tbody.innerHTML = '';
+            
+            if (data.par_compte && data.par_compte.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #7f8c8d; font-style: italic;">Aucun compte trouvé.</td></tr>';
+              document.getElementById('total-general').textContent = '0.00 €';
+              return;
+            }
+            
+            data.par_compte.forEach(function(row) {
+              var tr = document.createElement('tr');
+              var solde = parseFloat(row.solde);
+              var soldeColor = solde >= 0 ? '#27ae60' : '#e74c3c';
+              
+              tr.innerHTML =
+                '<td>' + row.compte_id + '</td>' +
+                '<td>' + row.nom_client + ' ' + row.prenom_client + '</td>' +
+                '<td><span style="background: #ecf0f1; padding: 0.25rem 0.5rem; border-radius: 15px; font-size: 0.9rem;">' + row.type_compte + '</span></td>' +
+                '<td style="font-weight: bold; color: ' + soldeColor + ';">' + solde.toFixed(2) + ' €</td>';
+              tbody.appendChild(tr);
+            });
+            
+            // Afficher le total général
+            var totalGeneral = parseFloat(data.total_general);
+            var totalColor = totalGeneral >= 0 ? '#27ae60' : '#e74c3c';
+            document.getElementById('total-general').innerHTML = 
+              '<span style="color: ' + totalColor + ';">' + totalGeneral.toFixed(2) + ' €</span>';
+            
+            // Afficher le détail crédits/débits si présent
+            if (data.totaux_details) {
+              document.getElementById('totaux-details').innerHTML =
+                '<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">' +
+                '<div style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 1rem; border-radius: 10px; flex: 1; min-width: 200px; text-align: center;">' +
+                '<div style="font-size: 0.9rem; opacity: 0.9;">Total Crédits</div>' +
+                '<div style="font-size: 1.5rem; font-weight: bold;">' + parseFloat(data.totaux_details.credits).toFixed(2) + ' €</div>' +
+                '</div>' +
+                '<div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 1rem; border-radius: 10px; flex: 1; min-width: 200px; text-align: center;">' +
+                '<div style="font-size: 0.9rem; opacity: 0.9;">Total Débits</div>' +
+                '<div style="font-size: 1.5rem; font-weight: bold;">' + parseFloat(data.totaux_details.debits).toFixed(2) + ' €</div>' +
+                '</div>' +
+                '</div>';
+            }
+          } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #e74c3c;">Erreur lors du chargement des données.</td></tr>';
+            document.getElementById('total-general').innerHTML = '<span style="color: #e74c3c;">Erreur</span>';
+          }
+        }
+      };
+      xhr.send();
+    }
+    
+    // Initialiser la page
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerTotaux();
+    });
+  </script>
+</body>
+</html>
