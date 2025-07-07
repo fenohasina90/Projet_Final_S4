@@ -25,6 +25,7 @@ class Pret
         return $db->lastInsertId();
     }
 
+    
     public static function createHistoriquePret($data)
     {
         $db = getDB();
