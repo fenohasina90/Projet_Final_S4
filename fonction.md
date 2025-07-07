@@ -1,23 +1,27 @@
-# Fonctionnalités Détaillées du Système Bancaire
+# Fonctionnalités Bancaires Détaillées
 
 ## 1. Ajout de Fonds dans l'Établissement Financier
 
 **Description** :  
-Permet d'enregistrer les entrées d'argent (dépôts clients, virements, etc.) dans les comptes de l'établissement.
+Permet d'enregistrer les dépôts de fonds (espèces, virements) sur les comptes clients.
 
 **Tables Utilisées** :
-- `comptes` : Vérification du compte crédité
-- `soldes` : Mise à jour du solde
+- `comptes` : Vérification du compte destinataire
+- `soldes` : Mise à jour du solde du compte
 - `transactions` : Journalisation de l'opération
 
-**Workflow** :
-1. Vérification de l'existence du compte (via `comptes.iban`)
-2. Création d'une entrée dans `transactions` (type 'Dépôt')
-3. Mise à jour du `soldes` avec le nouveau montant
+**Processus** :
+1. Vérification de l'existence du compte (table `comptes`)
+2. Création d'une entrée dans `soldes` avec le nouveau montant
+3. Enregistrement de la transaction dans `transactions`
+
+**Contrôles** :
+- Vérification AML pour les gros montants (>10 000€)
+- Validation de l'IBAN destinataire
 
 ---
 
-## 2. Création de Types de Prêt avec Différents Taux
+## 2. Création de Types de Prêt
 
 **Description** :  
 Configuration des différents produits de crédit proposés par la banque.
@@ -27,10 +31,15 @@ Configuration des différents produits de crédit proposés par la banque.
 - `taux_interet` : Référence des taux applicables
 
 **Paramètres Configurables** :
-- Taux annuel (lié à `taux_interet`)
+- Taux d'intérêt annuel
 - Durée maximale
 - Plage de montants
-- Type d'amortissement (4 options)
+- Type d'amortissement (4 modes disponibles)
+- Frais de dossier
+
+**Validation** :
+- Cohérence taux/durée/montant
+- Unicité du nom du produit
 
 ---
 
@@ -44,47 +53,73 @@ Configuration des différents produits de crédit proposés par la banque.
 - `types_pret` : Récupération des conditions
 
 **Processus** :
-1. Vérification éligibilité client (`clients.score_credit`)
-2. Calcul de la mensualité selon `types_pret.type_amortissement`
-3. Création enregistrement dans `prets`
+1. Calcul du taux d'endettement (revenu dans `clients`)
+2. Vérification des plages dans `types_pret`
+3. Création en statut "En attente" dans `prets`
 
-### 3.2 Suivi des Remboursements
+### 3.2 Approbation et Déblocage
 
 **Tables Utilisées** :
-- `amortissements` : Échéancier détaillé
-- `transactions` : Trace des paiements
-- `soldes` : Impact sur le compte
+- `prets` : Mise à jour du statut
+- `amortissements` : Génération du plan
+- `transactions` : Déblocage des fonds
+
+**Actions** :
+- Génération du plan d'amortissement
+- Déblocage vers compte client
+- Mise à jour du statut à "Approuvé"
+
+### 3.3 Suivi des Remboursements
+
+**Tables Utilisées** :
+- `amortissements` : Suivi des échéances
+- `transactions` : Enregistrement des paiements
+- `soldes` : Mise à jour des soldes
 
 **Fonctionnalités** :
-- Visualisation du calendrier de remboursement
-- Détection automatique des retards
-- Historique complet des transactions
-
-### 3.3 Gestion des Amortissements
-
-**Tables Utilisées** :
-- `amortissements` : Plan de remboursement
-- `prets` : Référence du contrat
-
-**Types Supportés** :
-- Amortissement constant (mensualités décroissantes)
-- Mensualités fixes
-- Prêts non amortissables (in fine)
-- Plans modulables
+- Marquage des échéances payées
+- Détection des retards
+- Calcul du capital restant dû
 
 ---
 
-## Tables Clés par Fonctionnalité
+## 4. Fonctions Spécialisées
 
-| Fonctionnalité               | Tables Principales                 | Tables Secondaires       |
-|------------------------------|------------------------------------|--------------------------|
-| Ajout de fonds               | transactions, soldes              | comptes                 |
-| Configuration produits       | types_pret, taux_interet          | -                       |
-| Gestion demande de prêt      | prets, clients                    | types_pret              |
-| Suivi remboursements         | amortissements, transactions      | prets, soldes           |
-| Calcul d'amortissement       | amortissements, prets             | types_pret              |
+### 4.1 Calcul des Mensualités
 
-**Relations Importantes** :
-- Un client (`clients`) peut avoir plusieurs comptes (`comptes`) et prêts (`prets`)
-- Chaque prêt génère un plan d'amortissement (`amortissements`)
-- Toutes les opérations financières sont tracées (`transactions`)
+**Méthodes selon `type_amortissement`** :
+- **CONSTANT** : Capital fixe + intérêts dégressifs
+- **MENSALITES_FIXES** : Formule classique
+- **NON_AMORTISSABLE** : Intérêts seuls
+- **MODULABLE** : Adaptable selon capacité client
+
+### 4.2 Reporting
+
+**Données Utilisées** :
+- Historique des `transactions`
+- État des `prets` et `amortissements`
+- Évolution des `soldes`
+
+**Indicateurs** :
+- Taux de défaut
+- Portefeuille de prêts
+- Liquidité de l'établissement
+
+<!-- **Formule CONSTANT:**
+- Amortissement mensuel = Capital / Nombre de mois
+
+- Intérêts du mois = Capital restant × (Taux annuel / 12)
+
+- Mensualité = Amortissement + Intérêts
+
+🔹 Exemple :
+- Capital = 1 200 000 Ar
+
+- Durée = 12 mois
+
+- Taux annuel = 12 % → Taux mensuel = 1 % = 0,01
+
+ -->
+
+
+

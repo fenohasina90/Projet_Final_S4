@@ -26,6 +26,23 @@ CREATE TABLE soldes (
     description TEXT
 );
 
+
+CREATE TABLE transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    montant DECIMAL(12, 2) NOT NULL,
+
+    type_transaction VARCHAR(50) CHECK (type_transaction IN (
+        'Dépôt', 
+        'Retrait', 
+        'Virement', 
+        'Prélèvement',
+        'Remboursement'
+    )),
+    date_transaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    pret_id INT NULL REFERENCES prets(pret_id)
+);
+
 CREATE TABLE types_pret (
     type_pret_id SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
@@ -37,7 +54,7 @@ CREATE TABLE types_pret (
     type_amortissement VARCHAR(20) CHECK (type_amortissement IN (
         'CONSTANT',         -- Amortissement constant (mensualités décroissantes)
         'MENSALITES_FIXES', -- Mensualités fixes (classique)
-        'NON_AMORTISSABLE',          -- Non amortissable (capital final)
+        'NON_AMORTISSABLE', -- Non amortissable (capital final)
         'MODULABLE'         -- Mensualités variables
     )) NOT NULL
 );
@@ -65,21 +82,7 @@ CREATE TABLE amortissements (
     mensualite DECIMAL(10, 2) NOT NULL,
     statut VARCHAR(20) DEFAULT 'A venir' CHECK (statut IN ('A venir', 'Payé', 'En retard'))
 );
-CREATE TABLE transactions (
-    transaction_id SERIAL PRIMARY KEY,
-    compte_id INT REFERENCES comptes(compte_id),
-    montant DECIMAL(12, 2) NOT NULL,
-    type_transaction VARCHAR(50) CHECK (type_transaction IN (
-        'Dépôt', 
-        'Retrait', 
-        'Virement', 
-        'Prélèvement',
-        'Remboursement'
-    )),
-    date_transaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    description TEXT,
-    pret_id INT NULL REFERENCES prets(pret_id)
-);
+
 
 CREATE TABLE taux_interet (
     taux_id SERIAL PRIMARY KEY,
@@ -87,3 +90,4 @@ CREATE TABLE taux_interet (
     taux_annuel DECIMAL(5, 2) NOT NULL,
     date_mise_a_jour DATE DEFAULT CURRENT_DATE
 );
+
