@@ -40,6 +40,10 @@ class PretController {
         $id = Pret::createPret($data);
         Flight::json(['message' => 'pret ajouté', 'id' => $id]);
     }
+
+    public static function createSimulation(){
+        
+    }
 }
 
 ?>
