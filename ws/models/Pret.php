@@ -7,7 +7,17 @@ class Pret
     public static function getAll()
     {
         $db = getDB();
-        $stmt = $db->query("SELECT * FROM prets ORDER BY date_debut DESC");
+        $stmt = $db->query("SELECT p.*, sp.statut FROM prets p 
+                           LEFT JOIN (
+                               SELECT pret_id, statut 
+                               FROM statuts_pret sp1 
+                               WHERE date_statut = (
+                                   SELECT MAX(date_statut) 
+                                   FROM statuts_pret sp2 
+                                   WHERE sp2.pret_id = sp1.pret_id
+                               )
+                           ) sp ON p.pret_id = sp.pret_id 
+                           ORDER BY p.date_debut DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -21,7 +31,17 @@ class Pret
     public static function getById($pretId)
     {
         $db = getDB();
-        $stmt = $db->prepare("SELECT * FROM prets WHERE pret_id = ?");
+        $stmt = $db->prepare("SELECT p.*, sp.statut FROM prets p 
+                              LEFT JOIN (
+                                  SELECT pret_id, statut 
+                                  FROM statuts_pret sp1 
+                                  WHERE date_statut = (
+                                      SELECT MAX(date_statut) 
+                                      FROM statuts_pret sp2 
+                                      WHERE sp2.pret_id = sp1.pret_id
+                                  )
+                              ) sp ON p.pret_id = sp.pret_id 
+                              WHERE p.pret_id = ?");
         $stmt->execute([$pretId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -29,8 +49,15 @@ class Pret
     public static function updatePretStatus($pretId, $statut)
     {
         $db = getDB();
-        $stmt = $db->prepare("UPDATE prets SET statut = ? WHERE pret_id = ?");
-        return $stmt->execute([$statut, $pretId]);
+        $stmt = $db->prepare("INSERT INTO statuts_pret (pret_id, statut) VALUES (?, ?)");
+        return $stmt->execute([$pretId, $statut]);
+    }
+
+    public static function updatePret($pretId, $data)
+    {
+        $db = getDB();
+        $stmt = $db->prepare("UPDATE prets SET mois_delai = ? WHERE pret_id = ?");
+        return $stmt->execute([$data['mois_delai'], $pretId]);
     }
 
     public static function getTypePretById($typePretId)
@@ -44,17 +71,23 @@ class Pret
     public static function createPret($data)
     {
         $db = getDB();
-        $stmt = $db->prepare("INSERT INTO prets (client_id, type_pret_id, montant, date_debut, duree_mois,statut, taux_applique, assurance) VALUES (?, ?, ?, CURRENT_DATE,?,?, ?, ?)");
+        $stmt = $db->prepare("INSERT INTO prets (client_id, type_pret_id, montant, date_debut, duree_mois, taux_applique, assurance, mois_delai) VALUES (?, ?, ?, CURRENT_DATE, ?, ?, ?, ?)");
         $stmt->execute([
             $data['client_id'], 
             $data['type_pret_id'], 
             $data['montant'], 
             $data['duree_mois'], 
-            $data['statut'],
             $data['taux_applique'],
-            $data['assurance']
+            $data['assurance'],
+            $data['mois_delai'] ?? 0
         ]);
-        return $db->lastInsertId();
+        $pretId = $db->lastInsertId();
+        
+        // Insérer le statut initial dans la table statuts_pret
+        $stmt = $db->prepare("INSERT INTO statuts_pret (pret_id, statut) VALUES (?, ?)");
+        $stmt->execute([$pretId, $data['statut']]);
+        
+        return $pretId;
     }
 
     public static function createHistoriquePret($pretId, $mois, $montantMensualite)
@@ -64,7 +97,7 @@ class Pret
         return $stmt->execute([$pretId, $mois, $montantMensualite]);
     }
 
-    public static function genererHistoriquePret($typeAmortissement, $pretId, $montant, $duree, $tauxAnnuel, $dateDebut) {
+    public static function genererHistoriquePret($typeAmortissement, $pretId, $montant, $duree, $tauxAnnuel, $dateDebut, $moisDelai = 0) {
         switch ($typeAmortissement) {
             case 'CONSTANT':
                 $details = self::amortissement_constant($montant, $tauxAnnuel, $duree);
@@ -86,7 +119,11 @@ class Pret
                 throw new Exception("Type d'amortissement inconnu : $typeAmortissement");
         }
     
-        $currentDate = new DateTime($dateDebut);
+        // Calculer la date de début de remboursement en ajoutant le délai
+        $dateDebutRemboursement = new DateTime($dateDebut);
+        $dateDebutRemboursement->modify("+{$moisDelai} months");
+        
+        $currentDate = clone $dateDebutRemboursement;
         foreach ($mensualites as $mensualite) {
             $mois = $currentDate->format('Y-m-d');
             self::createHistoriquePret($pretId, $mois, $mensualite);
@@ -156,7 +193,16 @@ class Pret
         $sql = "SELECT hp.*, p.client_id, p.montant, p.duree_mois, p.taux_applique 
                 FROM historique_pret hp 
                 JOIN prets p ON hp.pret_id = p.pret_id 
-                WHERE p.statut = 'Approuvé'";
+                JOIN (
+                    SELECT pret_id, statut 
+                    FROM statuts_pret sp1 
+                    WHERE date_statut = (
+                        SELECT MAX(date_statut) 
+                        FROM statuts_pret sp2 
+                        WHERE sp2.pret_id = sp1.pret_id
+                    )
+                ) sp ON p.pret_id = sp.pret_id 
+                WHERE sp.statut = 'Approuvé'";
         
         if ($clientId) {
             $sql .= " AND p.client_id = ?";

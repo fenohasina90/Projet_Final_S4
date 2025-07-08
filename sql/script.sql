@@ -1,4 +1,4 @@
-CREATE DATABASE tp_flight CHARACTER SET utf8mb4;
+CREATE DATABASE final_s4 CHARACTER SET utf8mb4;
 
 USE tp_flight;
 

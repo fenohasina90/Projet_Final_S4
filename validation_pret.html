@@ -28,6 +28,18 @@
     .btn-approve:hover {
       background-color: #45a049;
     }
+    .btn-update {
+      background-color: #2196F3;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+    .btn-update:hover {
+      background-color: #1976D2;
+    }
     .filter-section {
       margin: 20px 0;
       padding: 15px;
@@ -65,7 +77,9 @@
         <th>Durée (mois)</th>
         <th>Taux (%)</th>
         <th>Assurance</th>
+        <th>Délai (mois)</th>
         <th>Date de début</th>
+        <th>Début remboursement</th>
         <th>Statut</th>
         <th>Action</th>
       </tr>
@@ -134,6 +148,11 @@
 
       filteredPrets.forEach(pret => {
         const row = tbody.insertRow();
+        // Calculer la date de début de remboursement
+        const dateDebut = new Date(pret.date_debut);
+        const dateDebutRemboursement = new Date(dateDebut);
+        dateDebutRemboursement.setMonth(dateDebutRemboursement.getMonth() + (pret.mois_delai || 0));
+        
         row.innerHTML = `
           <td>${pret.pret_id}</td>
           <td>${getClientName(pret.client_id)}</td>
@@ -142,11 +161,19 @@
           <td>${pret.duree_mois}</td>
           <td>${pret.taux_applique}%</td>
           <td>${pret.assurance}</td>
+          <td>
+            ${pret.statut === 'En attente' ? 
+              `<input type="number" id="mois_delai_${pret.pret_id}" value="${pret.mois_delai || 0}" min="0" style="width: 60px;">` : 
+              `${pret.mois_delai || 0}`
+            }
+          </td>
           <td>${pret.date_debut}</td>
+          <td>${dateDebutRemboursement.toLocaleDateString('fr-FR')}</td>
           <td class="status-${pret.statut === 'En attente' ? 'pending' : 'approved'}">${pret.statut}</td>
           <td>
             ${pret.statut === 'En attente' ? 
-              `<button class="btn-approve" onclick="approvePret(${pret.pret_id})">Approuver</button>` : 
+              `<button class="btn-approve" onclick="approvePret(${pret.pret_id})">Approuver</button>
+               <button class="btn-update" onclick="updatePret(${pret.pret_id})">Modifier</button>` : 
               'Déjà approuvé'
             }
           </td>
@@ -168,14 +195,37 @@
 
     // Approuver un prêt
     function approvePret(pretId) {
+      const moisDelai = document.getElementById(`mois_delai_${pretId}`).value;
       if (confirm('Êtes-vous sûr de vouloir approuver ce prêt ?')) {
-        const data = `pret_id=${encodeURIComponent(pretId)}&statut=Approuvé`;
+        const data = `pret_id=${encodeURIComponent(pretId)}&statut=Approuvé&mois_delai=${encodeURIComponent(moisDelai)}`;
         ajax("POST", "/approve-pret", data, (response) => {
           if (response.success) {
             document.getElementById('message').textContent = "Prêt approuvé avec succès !";
             loadPrets(); // Recharger la liste
           } else {
             document.getElementById('message').textContent = "Erreur lors de l'approbation : " + response.message;
+          }
+        });
+      }
+    }
+
+    // Mettre à jour un prêt
+    function updatePret(pretId) {
+      const moisDelai = document.getElementById(`mois_delai_${pretId}`).value;
+      
+      if (moisDelai === '' || moisDelai < 0) {
+        alert('Veuillez entrer un délai valide (nombre positif)');
+        return;
+      }
+
+      if (confirm('Êtes-vous sûr de vouloir modifier ce prêt ?')) {
+        const data = `pret_id=${encodeURIComponent(pretId)}&mois_delai=${encodeURIComponent(moisDelai)}`;
+        ajax("POST", "/update-pret", data, (response) => {
+          if (response.success) {
+            document.getElementById('message').textContent = "Prêt modifié avec succès !";
+            loadPrets(); // Recharger la liste
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de la modification : " + response.message;
           }
         });
       }

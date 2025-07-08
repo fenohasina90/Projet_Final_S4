@@ -1,0 +1,474 @@
+/* Styles spécifiques pour la page interet.html */
+
+/* Variables spécifiques aux intérêts */
+:root {
+  --interest-primary: #1e40af;
+  --interest-secondary: #3b82f6;
+  --interest-accent: #60a5fa;
+  --interest-light: #dbeafe;
+  --interest-success: #10b981;
+  --interest-warning: #f59e0b;
+  --interest-danger: #ef4444;
+  --interest-text: #1f2937;
+  --interest-text-light: #6b7280;
+}
+
+/* Styles pour les sections d'intérêts */
+.interest-section {
+  margin-bottom: 3rem;
+}
+
+.interest-section h3 {
+  color: var(--interest-primary);
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid var(--interest-accent);
+  padding-bottom: 0.5rem;
+}
+
+/* Styles pour le tableau des intérêts */
+.interest-table {
+  background: linear-gradient(135deg, var(--white), var(--interest-light));
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.interest-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.interest-table th {
+  background: linear-gradient(135deg, var(--interest-primary), var(--interest-secondary));
+  color: var(--white);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.interest-table th:first-child {
+  text-align: left;
+}
+
+.interest-table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--white), transparent);
+}
+
+.interest-table td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--gray-200);
+  transition: all 0.3s ease;
+}
+
+.interest-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--interest-primary);
+}
+
+.interest-table tr:hover {
+  background: linear-gradient(135deg, var(--interest-light), var(--white));
+  transform: scale(1.01);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+}
+
+/* Styles pour les colonnes spécifiques */
+.interest-table .interest-amount {
+  font-weight: bold;
+  color: var(--interest-danger);
+  font-size: 1.1rem;
+}
+
+.interest-table .capital-amount {
+  font-weight: 600;
+  color: var(--interest-success);
+}
+
+.interest-table .monthly-amount {
+  font-weight: 600;
+  color: var(--interest-primary);
+}
+
+/* Styles pour le résumé des intérêts */
+.interest-summary {
+  background: linear-gradient(135deg, var(--white), var(--interest-light));
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.interest-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.interest-stat-card {
+  background: linear-gradient(135deg, var(--white), var(--interest-light));
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.interest-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--interest-accent);
+}
+
+.interest-stat-card.total-interests {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: var(--interest-warning);
+}
+
+.interest-stat-card.total-monthly {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border-color: var(--interest-success);
+}
+
+.interest-stat-card.percentage {
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  border-color: var(--interest-secondary);
+}
+
+.interest-stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--interest-primary), var(--interest-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.interest-stat-label {
+  color: var(--interest-text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+/* Styles pour les filtres spécifiques aux intérêts */
+.interest-filters {
+  background: linear-gradient(135deg, var(--white), var(--interest-light));
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 2px solid var(--interest-accent);
+}
+
+.interest-filters .filter-section {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.interest-filters label {
+  color: var(--interest-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.interest-filters select,
+.interest-filters input[type="month"] {
+  border: 2px solid var(--interest-accent);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--interest-primary);
+  background: var(--white);
+  transition: all 0.3s ease;
+}
+
+.interest-filters select:focus,
+.interest-filters input[type="month"]:focus {
+  border-color: var(--interest-primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.interest-filters .btn {
+  background: linear-gradient(135deg, var(--interest-primary), var(--interest-secondary));
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: var(--white);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.interest-filters .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+}
+
+/* Styles pour les messages d'état */
+.interest-message {
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  border-left: 4px solid;
+}
+
+.interest-message.success {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border-left-color: var(--interest-success);
+}
+
+.interest-message.error {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+  border-left-color: var(--interest-danger);
+}
+
+.interest-message.warning {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border-left-color: var(--interest-warning);
+}
+
+/* Styles pour le graphique CSS */
+.css-chart {
+  background: linear-gradient(135deg, var(--white), var(--interest-light));
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+  position: relative;
+  min-height: 400px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: end;
+  justify-content: space-around;
+  height: 300px;
+  padding: 1rem 0;
+  border-bottom: 2px solid var(--interest-accent);
+  border-left: 2px solid var(--interest-accent);
+  position: relative;
+}
+
+.chart-bar {
+  background: linear-gradient(to top, var(--interest-primary), var(--interest-secondary));
+  border-radius: 8px 8px 0 0;
+  min-width: 40px;
+  margin: 0 5px;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(30, 64, 175, 0.2);
+}
+
+.chart-bar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+}
+
+.chart-bar::after {
+  content: attr(data-value);
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--interest-primary);
+  color: var(--white);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.chart-bar:hover::after {
+  opacity: 1;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+  padding: 0 1rem;
+}
+
+.chart-label {
+  color: var(--interest-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: center;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  white-space: nowrap;
+}
+
+/* Styles pour les animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barGrow {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--bar-height);
+  }
+}
+
+.interest-table,
+.interest-summary,
+.interest-filters,
+.css-chart {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.chart-bar {
+  animation: barGrow 1s ease-out;
+}
+
+/* Styles pour les états vides */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--interest-text-light);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--interest-text);
+}
+
+.empty-state-description {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Styles responsifs pour les intérêts */
+@media (max-width: 768px) {
+  .interest-table {
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .interest-table th,
+  .interest-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .interest-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .interest-stat-value {
+    font-size: 2rem;
+  }
+  
+  .interest-filters {
+    padding: 1rem;
+  }
+  
+  .interest-filters .filter-section {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .interest-filters select,
+  .interest-filters input[type="month"],
+  .interest-filters .btn {
+    width: 100%;
+  }
+  
+  .css-chart {
+    padding: 1rem;
+    min-height: 300px;
+  }
+  
+  .chart-bars {
+    height: 200px;
+  }
+  
+  .chart-bar {
+    min-width: 30px;
+    margin: 0 2px;
+  }
+  
+  .chart-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Styles pour les tooltips et infobulles */
+.interest-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.interest-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--interest-primary);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.interest-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+} 

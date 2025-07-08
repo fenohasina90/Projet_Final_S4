@@ -68,6 +68,7 @@ alter Table prets add COLUMN assurance INT DEFAULT 0;
 
 
 
+
 CREATE TABLE amortissements (
     amortissement_id INT AUTO_INCREMENT PRIMARY KEY,
     pret_id INT,
@@ -79,7 +80,7 @@ CREATE TABLE amortissements (
     mensualite DECIMAL(10, 2) NOT NULL,
     statut VARCHAR(20) DEFAULT 'A venir',
     FOREIGN KEY (pret_id) REFERENCES prets(pret_id),
-    CHECK (statut IN ('A venir', 'Payé', 'En retard'))
+    CHECK (statut IN ('A venir', 'Paye', 'En retard'))
 );
 
 CREATE TABLE transactions (
@@ -93,10 +94,10 @@ CREATE TABLE transactions (
     FOREIGN KEY (compte_id) REFERENCES comptes(compte_id),
     FOREIGN KEY (pret_id) REFERENCES prets(pret_id),
     CHECK (type_transaction IN (
-        'Dépôt',
+        'Depot',
         'Retrait',
         'Virement',
-        'Prélèvement',
+        'Prelevement',
         'Remboursement'
     ))
 );

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Délai de Remboursement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-case {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .result {
+            background-color: #e8f5e8;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test du Délai de Remboursement</h1>
+    
+    <div class="test-case">
+        <h3>Test 1: Prêt créé aujourd'hui avec délai de 3 mois</h3>
+        <p><strong>Date de création:</strong> <span id="date-creation"></span></p>
+        <p><strong>Délai:</strong> 3 mois</p>
+        <p><strong>Début remboursement:</strong> <span id="debut-remboursement-1"></span></p>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 2: Prêt créé aujourd'hui avec délai de 0 mois</h3>
+        <p><strong>Date de création:</strong> <span id="date-creation-2"></span></p>
+        <p><strong>Délai:</strong> 0 mois</p>
+        <p><strong>Début remboursement:</strong> <span id="debut-remboursement-2"></span></p>
+    </div>
+
+    <div class="test-case">
+        <h3>Test 3: Prêt créé aujourd'hui avec délai de 6 mois</h3>
+        <p><strong>Date de création:</strong> <span id="date-creation-3"></span></p>
+        <p><strong>Délai:</strong> 6 mois</p>
+        <p><strong>Début remboursement:</strong> <span id="debut-remboursement-3"></span></p>
+    </div>
+
+    <div class="result">
+        <h3>Résultats des tests</h3>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function calculerDateRemboursement(dateCreation, moisDelai) {
+            const date = new Date(dateCreation);
+            date.setMonth(date.getMonth() + moisDelai);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        function afficherTests() {
+            const aujourdhui = new Date();
+            const dateCreation = aujourdhui.toLocaleDateString('fr-FR');
+
+            // Test 1: Délai de 3 mois
+            document.getElementById('date-creation').textContent = dateCreation;
+            document.getElementById('debut-remboursement-1').textContent = calculerDateRemboursement(aujourdhui, 3);
+
+            // Test 2: Délai de 0 mois
+            document.getElementById('date-creation-2').textContent = dateCreation;
+            document.getElementById('debut-remboursement-2').textContent = calculerDateRemboursement(aujourdhui, 0);
+
+            // Test 3: Délai de 6 mois
+            document.getElementById('date-creation-3').textContent = dateCreation;
+            document.getElementById('debut-remboursement-3').textContent = calculerDateRemboursement(aujourdhui, 6);
+
+            // Afficher les résultats
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <p><strong>✅ Test 1:</strong> Avec un délai de 3 mois, le remboursement commence le ${calculerDateRemboursement(aujourdhui, 3)}</p>
+                <p><strong>✅ Test 2:</strong> Avec un délai de 0 mois, le remboursement commence le ${calculerDateRemboursement(aujourdhui, 0)}</p>
+                <p><strong>✅ Test 3:</strong> Avec un délai de 6 mois, le remboursement commence le ${calculerDateRemboursement(aujourdhui, 6)}</p>
+            `;
+        }
+
+        // Exécuter les tests au chargement de la page
+        window.onload = afficherTests;
+    </script>
+</body>
+</html> 

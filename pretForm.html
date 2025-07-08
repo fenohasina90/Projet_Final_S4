@@ -19,6 +19,8 @@
     <input type="number" id="taux_annuel" step="0.01" required readonly><br><br>
     <label>Assurance :</label>
     <input type="text" id="assurance" required><br><br>
+    <label>Délai avant remboursement (mois) :</label>
+    <input type="number" id="mois_delai" min="0" value="0" required><br><br>
     <input type="hidden" value="En attente" id="statut">
     <button type="submit">Valider</button>
   </form>
@@ -85,6 +87,7 @@
       const taux_annuel = document.getElementById('taux_annuel').value;
       const type_pret = document.getElementById('type_pret').value;
       const assurance = document.getElementById('assurance').value;
+      const mois_delai = document.getElementById('mois_delai').value;
       const statut = document.getElementById('statut').value
 
       if (!client || !montant || !duree || !taux_annuel || !type_pret || !assurance) {
@@ -92,7 +95,7 @@
         return;
       }
 
-      const data = `client_id=${encodeURIComponent(client)}&type_pret_id=${encodeURIComponent(type_pret)}&montant=${encodeURIComponent(montant)}&duree_mois=${encodeURIComponent(duree)}&taux_applique=${encodeURIComponent(taux_annuel)}&assurance=${encodeURIComponent(assurance)}&statut=${encodeURIComponent(statut)}`;
+      const data = `client_id=${encodeURIComponent(client)}&type_pret_id=${encodeURIComponent(type_pret)}&montant=${encodeURIComponent(montant)}&duree_mois=${encodeURIComponent(duree)}&taux_applique=${encodeURIComponent(taux_annuel)}&assurance=${encodeURIComponent(assurance)}&mois_delai=${encodeURIComponent(mois_delai)}&statut=${encodeURIComponent(statut)}`;
       ajax("POST", "/valider-pret", data, (response) => {
         if (response.success) {
           document.getElementById('message').textContent = "Prêt créé avec succès !";

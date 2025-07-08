@@ -60,6 +60,11 @@ class PretController {
             $pretId = $data['pret_id'];
             $statut = $data['statut'];
             
+            // Mettre à jour le mois_delai si fourni
+            if (isset($data['mois_delai'])) {
+                Pret::updatePret($pretId, ['mois_delai' => $data['mois_delai']]);
+            }
+
             // Mettre à jour le statut du prêt
             Pret::updatePretStatus($pretId, $statut);
             
@@ -71,19 +76,47 @@ class PretController {
                     $typePret = Pret::getTypePretById($pret['type_pret_id']);
                     $typeAmortissement = $typePret['type_amortissement'];
                     
-                    // Générer l'historique des mensualités
+                    // Générer l'historique des mensualités avec le délai
                     Pret::genererHistoriquePret(
                         $typeAmortissement,
                         $pretId,
                         $pret['montant'],
                         $pret['duree_mois'],
                         $pret['taux_applique'],
-                        $pret['date_debut']
+                        $pret['date_debut'],
+                        $pret['mois_delai'] ?? 0
                     );
                 }
             }
             
             Flight::json(['success' => true, 'message' => 'Prêt approuvé avec succès']);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function updatePret() {
+        $data = Flight::request()->data;
+        try {
+            $pretId = $data['pret_id'];
+            $moisDelai = $data['mois_delai'];
+            
+            // Vérifier que le prêt existe et n'est pas encore approuvé
+            $pret = Pret::getById($pretId);
+            if (!$pret) {
+                Flight::json(['success' => false, 'message' => 'Prêt non trouvé']);
+                return;
+            }
+            
+            if ($pret['statut'] !== 'En attente') {
+                Flight::json(['success' => false, 'message' => 'Impossible de modifier un prêt déjà approuvé']);
+                return;
+            }
+            
+            // Mettre à jour le prêt
+            Pret::updatePret($pretId, ['mois_delai' => $moisDelai]);
+            
+            Flight::json(['success' => true, 'message' => 'Prêt modifié avec succès']);
         } catch (Exception $e) {
             Flight::json(['success' => false, 'message' => $e->getMessage()]);
         }
