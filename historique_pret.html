@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Historique des Prêts</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/historique_pret.css">
   <style>
     table {
       border-collapse: collapse;
@@ -32,22 +35,43 @@
   </style>
 </head>
 <body>
-  <h2>Historique des Prêts Approuvés</h2>
-  
-  <div class="filter-section">
-    <label>Filtrer par client :</label>
-    <select id="filter-client">
-      <option value="">Tous les clients</option>
-    </select>
-    <button onclick="loadHistorique()">Filtrer</button>
-    <button>EXPORT</button>
-  </div>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="historique-container">
+      <div class="historique-header">
+        <h2>Historique des Prêts Approuvés</h2>
+        <p>Consultez l'historique des remboursements par client et par prêt</p>
+      </div>
 
-  <div id="historique-container">
-    <!-- L'historique sera affiché ici -->
-  </div>
+      <div class="filter-section">
+        <label>Filtrer par client :</label>
+        <select id="filter-client">
+          <option value="">Tous les clients</option>
+        </select>
+        <button onclick="loadHistorique()">Filtrer</button>
+        <button>EXPORT</button>
+      </div>
 
-  <div id="message"></div>
+      <div id="historique-container">
+        <!-- L'historique sera affiché ici -->
+      </div>
+
+      <div id="message"></div>
+    </div>
+  </div>
 
   <script>
     const apiBase = "http://localhost/Projet_Final_S4/ws";

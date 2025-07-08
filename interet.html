@@ -2,42 +2,57 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intérêts par Mois</title>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 60%;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #333;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #eee;
-        }
-        #chart-container {
-            width: 70%;
-            margin-top: 40px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/interet.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="interet-container">
+        <div class="interet-header">
+            <h2>Intérêts Gagnés par Mois</h2>
+            <p>Analysez les intérêts gagnés sur une période donnée</p>
+        </div>
 
-    <h2>Intérêts Gagnés par Mois</h2>
+    <div class="date-controls">
+        <label for="date1">Date Début :</label>
+        <input type="date" id="date1">
 
-    <label for="date1">Date Début :</label>
-    <input type="date" id="date1">
+        <label for="date2">Date Fin :</label>
+        <input type="date" id="date2">
 
-    <label for="date2">Date Fin :</label>
-    <input type="date" id="date2">
+        <button onclick="getInteret()">Afficher</button>
+    </div>
 
-    <button onclick="getInteret()">Afficher</button>
+    <div id="message"></div>
 
-    <table id="table-interet">
+    <div class="chart-section">
+        <div class="chart-header">
+            <h3>Graphique des Intérêts</h3>
+        </div>
+        <div id="chart-container" class="chart-container">
+            <canvas id="interetChart"></canvas>
+        </div>
+    </div>
+
+    <table id="table-interet" class="interet-table">
         <thead>
             <tr>
                 <th>Mois</th>
@@ -76,6 +91,17 @@
         function getInteret() {
             const date1 = document.getElementById("date1").value;
             const date2 = document.getElementById("date2").value;
+            
+            if (!date1 || !date2) {
+                showMessage("Veuillez sélectionner les deux dates", "error");
+                return;
+            }
+            
+            if (date1 > date2) {
+                showMessage("La date de début doit être antérieure à la date de fin", "error");
+                return;
+            }
+            
             const url = `/interet?date1=${encodeURIComponent(date1)}&date2=${encodeURIComponent(date2)}`;
 
             ajax("GET", url, null, (response) => {
@@ -90,6 +116,7 @@
                     row.insertCell().textContent = "Aucune donnée";
                     row.insertCell();
                     row.insertCell();
+                    showMessage("Aucun intérêt trouvé pour cette période", "info");
                 } else {
                     response.forEach(entry => {
                         const row = tbody.insertRow();
@@ -109,12 +136,39 @@
                     });
 
                     drawChart(labels, data);
+                    showMessage(`${response.length} mois d'intérêts trouvés`, "success");
                 }
             });
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            
+            // Supprimer les anciennes classes
+            messageDiv.className = '';
+            
+            // Ajouter la classe appropriée
+            if (type === 'error') {
+                messageDiv.style.backgroundColor = '#ffebee';
+                messageDiv.style.color = '#c62828';
+                messageDiv.style.border = '1px solid #ffcdd2';
+            } else if (type === 'success') {
+                messageDiv.style.backgroundColor = '#e8f5e8';
+                messageDiv.style.color = '#2e7d32';
+                messageDiv.style.border = '1px solid #c8e6c9';
+            } else {
+                messageDiv.style.backgroundColor = '#e3f2fd';
+                messageDiv.style.color = '#1565c0';
+                messageDiv.style.border = '1px solid #bbdefb';
+            }
         }
 
 
         </script>
         <script src="interet.js" defer></script>
+        </div>
+    </div>
 </body>
 </html>

@@ -2,10 +2,32 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Création d'un Prêt</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
 </head>
 <body>
-  <h2>Créer un nouveau prêt</h2>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Créer un nouveau prêt</h2>
+        <p>Remplissez les informations pour créer un nouveau prêt</p>
+      </div>
   <form id="pretForm" onsubmit="event.preventDefault(); validerpret();">
     <label>Client :</label>
     <select id="client" required></select><br><br>
@@ -22,9 +44,13 @@
     <label>Délai avant remboursement (mois) :</label>
     <input type="number" id="mois_delai" min="0" value="0" required><br><br>
     <input type="hidden" value="En attente" id="statut">
-    <button type="submit">Valider</button>
+    <div class="form-actions">
+      <button type="submit">Créer le Prêt</button>
+    </div>
   </form>
   <div id="message"></div>
+    </div>
+  </div>
 
   <script>
     const apiBase = "http://localhost/Projet_Final_S4/ws";

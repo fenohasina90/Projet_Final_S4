@@ -1,28 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestion des types de prêt</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/type_pret.css">
 </head>
 <body>
-  <h1>Gestion des types de prêt</h1>
-  <div>
-    <input type="text" id="nom" placeholder="Nom du prêt"><br>
-    <input type="number" id="taux_annuel" placeholder="Taux annuel (%)"><br>
-    <input type="number" id="duree_max_mois" placeholder="Durée max (mois)"><br>
-    <input type="number" id="montant_min" placeholder="Montant minimum"><br>
-    <input type="number" id="montant_max" placeholder="Montant maximum"><br>
-    <input type="number" id="frais_dossier" placeholder="Frais de dossier (%)"><br>
-
-    <select id="type_amortissement">
-      <option value="CONSTANT">CONSTANT</option>
-      <option value="MENSUALITES_FIXES">MENSUALITES_FIXES</option>
-      <option value="NON_AMORTISSABLE">NON_AMORTISSABLE</option>
-      <option value="MODULABLE">MODULABLE</option>
-    </select><br><br>
-
-    <button onclick="ajouter()">Ajouter</button>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="type-pret-container">
+      <div class="type-pret-header">
+        <h2>Gestion des types de prêt</h2>
+        <p>Ajoutez ou modifiez les types de prêts disponibles</p>
+      </div>
+      <div class="type-pret-form">
+        <input type="text" id="nom" placeholder="Nom du prêt"><br>
+        <input type="number" id="taux_annuel" placeholder="Taux annuel (%)"><br>
+        <input type="number" id="duree_max_mois" placeholder="Durée max (mois)"><br>
+        <input type="number" id="montant_min" placeholder="Montant minimum"><br>
+        <input type="number" id="montant_max" placeholder="Montant maximum"><br>
+        <input type="number" id="frais_dossier" placeholder="Frais de dossier (%)"><br>
+        <select id="type_amortissement">
+          <option value="CONSTANT">CONSTANT</option>
+          <option value="MENSUALITES_FIXES">MENSUALITES_FIXES</option>
+          <option value="NON_AMORTISSABLE">NON_AMORTISSABLE</option>
+          <option value="MODULABLE">MODULABLE</option>
+        </select><br><br>
+        <button onclick="ajouter()">Ajouter</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -59,7 +80,7 @@
         `type_amortissement=${encodeURIComponent(type_amortissement)}`;
 
       ajax("POST", "/type_pret", data, (response) => {
-        alert("Type de prêt créé avec l’ID : " + response.id);
+        alert("Type de prêt créé avec l'ID : " + response.id);
       });
     }
   </script>

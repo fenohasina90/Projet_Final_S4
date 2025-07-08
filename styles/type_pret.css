@@ -1,0 +1,107 @@
+/* Styles spécifiques pour la page de gestion des types de prêt */
+.type-pret-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.type-pret-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.type-pret-header h2 {
+    color: #2c3e50;
+    font-size: 2.2em;
+    margin-bottom: 10px;
+}
+
+.type-pret-header p {
+    color: #666;
+    font-size: 1.1em;
+}
+
+.type-pret-form {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.type-pret-form label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.type-pret-form input,
+.type-pret-form select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.type-pret-form input:focus,
+.type-pret-form select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.type-pret-form button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.type-pret-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.type-pret-table th {
+    background-color: #34495e;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+    padding: 15px;
+}
+
+.type-pret-table td {
+    padding: 15px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.type-pret-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .type-pret-container {
+        padding: 15px;
+    }
+    .type-pret-form {
+        padding: 15px;
+    }
+    .type-pret-table {
+        font-size: 0.85em;
+    }
+    .type-pret-table th,
+    .type-pret-table td {
+        padding: 10px;
+    }
+} 

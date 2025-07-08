@@ -214,4 +214,36 @@ class Pret
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public static function getInteretParMois($date1, $date2)
+    {
+        $db = getDB();
+        
+        // Calculer les intérêts par mois pour les prêts approuvés
+        // Pour simplifier, on considère que les intérêts représentent environ 30% du montant mensuel
+        // Dans un vrai système, il faudrait calculer précisément la part intérêts vs capital
+        $sql = "SELECT 
+                    DATE_FORMAT(hp.mois, '%Y-%m') as periode,
+                    SUM(hp.montant_mensualite * 0.3) as interet_gagne
+                FROM historique_pret hp 
+                JOIN prets p ON hp.pret_id = p.pret_id 
+                JOIN (
+                    SELECT pret_id, statut 
+                    FROM statuts_pret sp1 
+                    WHERE date_statut = (
+                        SELECT MAX(date_statut) 
+                        FROM statuts_pret sp2 
+                        WHERE sp2.pret_id = sp1.pret_id
+                    )
+                ) sp ON p.pret_id = sp.pret_id 
+                WHERE sp.statut = 'Approuvé'
+                AND hp.mois BETWEEN ? AND ?
+                GROUP BY DATE_FORMAT(hp.mois, '%Y-%m')
+                ORDER BY periode";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$date1, $date2]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

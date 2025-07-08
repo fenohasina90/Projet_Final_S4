@@ -2,62 +2,32 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Validation des Prêts</title>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .btn-approve {
-      background-color: #4CAF50;
-      color: white;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    .btn-approve:hover {
-      background-color: #45a049;
-    }
-    .btn-update {
-      background-color: #2196F3;
-      color: white;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      margin-left: 5px;
-    }
-    .btn-update:hover {
-      background-color: #1976D2;
-    }
-    .filter-section {
-      margin: 20px 0;
-      padding: 15px;
-      background-color: #f9f9f9;
-      border-radius: 5px;
-    }
-    .status-pending {
-      color: #ff9800;
-      font-weight: bold;
-    }
-    .status-approved {
-      color: #4CAF50;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/validation_pret.css">
 </head>
 <body>
-  <h2>Validation des Prêts</h2>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="validation-container">
+      <div class="validation-header">
+        <h2>Validation des Prêts</h2>
+        <p>Validez et approuvez les demandes de prêts en attente</p>
+      </div>
   
   <div class="filter-section">
     <label>Filtrer par client :</label>
@@ -89,6 +59,8 @@
   </table>
 
   <div id="message"></div>
+    </div>
+  </div>
 
   <script>
     const apiBase = "http://localhost/Projet_Final_S4/ws";
@@ -209,7 +181,7 @@
       }
     }
 
-    // Mettre à jour un prêt
+
     function updatePret(pretId) {
       const moisDelai = document.getElementById(`mois_delai_${pretId}`).value;
       

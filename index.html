@@ -1,116 +1,100 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Accueil - Gestion des Fonds</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Gestion des Prêts</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/index.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+            <div class="navbar-links">
+                <a href="index.html">Accueil</a>
+                <a href="pretForm.html">Créer un prêt</a>
+                <a href="validation_pret.html">Validation</a>
+                <a href="historique_pret.html">Historique</a>
+                <a href="simulation.html">Simulation</a>
+                <a href="interet.html">Intérêts</a>
+                <a href="create_type_pret.html">Types de prêts</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <!-- Section Hero -->
+        <section class="hero-section">
+            <h1>Système de Gestion des Prêts</h1>
+            <p>Gérez vos prêts bancaires de manière efficace et professionnelle</p>
+        </section>
 
-  <h1>Gestion des étudiants</h1>
+        <!-- Menu Principal -->
+        <section class="menu-grid">
+            <div class="menu-card">
+                <h3>Créer un Prêt</h3>
+                <p>Créez de nouveaux prêts pour vos clients avec différents types d'amortissement</p>
+                <a href="pretForm.html" class="btn">Créer un Prêt</a>
+            </div>
 
-  <div>
-    <input type="hidden" id="id">
-    <input type="text" id="nom" placeholder="Nom">
-    <input type="text" id="prenom" placeholder="Prénom">
-    <input type="email" id="email" placeholder="Email">
-    <input type="number" id="age" placeholder="Âge">
-    <button onclick="ajouterOuModifier()">Ajouter / Modifier</button>
-  </div>
+            <div class="menu-card">
+                <h3>Validation des Prêts</h3>
+                <p>Validez et approuvez les demandes de prêts en attente</p>
+                <a href="validation_pret.html" class="btn">Valider les Prêts</a>
+            </div>
 
-  <table id="table-etudiants">
-    <thead>
-      <tr>
-        <th>ID</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Âge</th><th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+            <div class="menu-card">
+                <h3>Historique des Prêts</h3>
+                <p>Consultez l'historique des remboursements et des mensualités</p>
+                <a href="historique_pret.html" class="btn">Voir l'Historique</a>
+            </div>
 
-  <script>
-    const apiBase = "http://localhost/tp-flightphp-crud/Projet_Final_S4/ws";
+            <div class="menu-card">
+                <h3>Simulation de Prêt</h3>
+                <p>Simulez différents scénarios de prêts avant de les créer</p>
+                <a href="simulation.html" class="btn">Simuler un Prêt</a>
+            </div>
 
-    function ajax(method, url, data, callback) {
-      const xhr = new XMLHttpRequest();
-      xhr.open(method, apiBase + url, true);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          callback(JSON.parse(xhr.responseText));
-        }
-      };
-      xhr.send(data);
-    }
+            <div class="menu-card">
+                <h3>Gestion des Intérêts</h3>
+                <p>Analysez les intérêts gagnés par période</p>
+                <a href="interet.html" class="btn">Voir les Intérêts</a>
+            </div>
 
-    function chargerEtudiants() {
-      ajax("GET", "/etudiants", null, (data) => {
-        const tbody = document.querySelector("#table-etudiants tbody");
-        tbody.innerHTML = "";
-        data.forEach(e => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${e.id}</td>
-            <td>${e.nom}</td>
-            <td>${e.prenom}</td>
-            <td>${e.email}</td>
-            <td>${e.age}</td>
-            <td>
-              <button onclick='remplirFormulaire(${JSON.stringify(e)})'>✏️</button>
-              <button onclick='supprimerEtudiant(${e.id})'>🗑️</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
+            <div class="menu-card">
+                <h3>Types de Prêts</h3>
+                <p>Gérez les différents types de prêts disponibles</p>
+                <a href="create_type_pret.html" class="btn">Gérer les Types</a>
+            </div>
+        </section>
 
-    function ajouterOuModifier() {
-      const id = document.getElementById("id").value;
-      const nom = document.getElementById("nom").value;
-      const prenom = document.getElementById("prenom").value;
-      const email = document.getElementById("email").value;
-      const age = document.getElementById("age").value;
+        <!-- Section Fonctionnalités -->
+        <section class="features-section">
+            <h2>Fonctionnalités Principales</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h4>Gestion Complète</h4>
+                    <p>Création, validation et suivi des prêts en un seul endroit</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Calculs Automatiques</h4>
+                    <p>Calculs automatiques des mensualités et des intérêts</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Types d'Amortissement</h4>
+                    <p>Support de différents types d'amortissement (constant, mensualités fixes, etc.)</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Délais de Remboursement</h4>
+                    <p>Gestion des délais avant le début du remboursement</p>
+                </div>
+            </div>
+        </section>
+    </div>
 
-      const data = `nom=${encodeURIComponent(nom)}&prenom=${encodeURIComponent(prenom)}&email=${encodeURIComponent(email)}&age=${age}`;
-
-      if (id) {
-        ajax("PUT", `/etudiants/${id}`, data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
-      } else {
-        ajax("POST", "/etudiants", data, () => {
-          resetForm();
-          chargerEtudiants();
-        });
-      }
-    }
-
-    function remplirFormulaire(e) {
-      document.getElementById("id").value = e.id;
-      document.getElementById("nom").value = e.nom;
-      document.getElementById("prenom").value = e.prenom;
-      document.getElementById("email").value = e.email;
-      document.getElementById("age").value = e.age;
-    }
-
-    function supprimerEtudiant(id) {
-      if (confirm("Supprimer cet étudiant ?")) {
-        ajax("DELETE", `/etudiants/${id}`, null, () => {
-          chargerEtudiants();
-        });
-      }
-    }
-
-    function resetForm() {
-      document.getElementById("id").value = "";
-      document.getElementById("nom").value = "";
-      document.getElementById("prenom").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("age").value = "";
-    }
-
-    chargerEtudiants();
-  </script>
-
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Système de Gestion des Prêts. Tous droits réservés.</p>
+    </footer>
 </body>
 </html>
