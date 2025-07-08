@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disponibilité des Fonds EF</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
+  <style>
+    .dispo-container { max-width: 700px; margin: 2em auto; background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+    .dispo-form { display: flex; gap: 1em; flex-wrap: wrap; align-items: flex-end; margin-bottom: 2em; }
+    .dispo-form label { font-weight: 500; }
+    .dispo-form input { padding: 0.3em 0.5em; }
+    .dispo-table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    .dispo-table th, .dispo-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .dispo-table th { background: #f5f5f5; }
+    @media (max-width: 600px) { .dispo-form { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+        <a href="ajout_fond.html">Ajout Fonds</a>
+        <a href="disponibilite_ef.html">Disponibilité EF</a>
+      </div>
+    </div>
+  </nav>
+  <div class="dispo-container">
+    <h2>Disponibilité mensuelle des fonds de l'EF</h2>
+    <form class="dispo-form" id="dispoForm" onsubmit="event.preventDefault(); chargerDisponibilite();">
+      <div>
+        <label for="date_debut">Mois début :</label>
+        <input type="month" id="date_debut" required>
+      </div>
+      <div>
+        <label for="date_fin">Mois fin :</label>
+        <input type="month" id="date_fin" required>
+      </div>
+      <button type="submit">Afficher</button>
+    </form>
+    <div id="dispo-message"></div>
+    <table class="dispo-table" id="dispo-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Mois</th>
+          <th>Fonds non empruntés (€)</th>
+          <th>Remboursements reçus (€)</th>
+          <th>Total disponible (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    function chargerDisponibilite() {
+      const debut = document.getElementById('date_debut').value;
+      const fin = document.getElementById('date_fin').value;
+      if (!debut || !fin) return;
+      document.getElementById('dispo-message').textContent = '';
+      document.getElementById('dispo-table').style.display = 'none';
+      fetch(`${apiBase}/disponibilite-ef?date_debut=${debut}&date_fin=${fin}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById('dispo-message').textContent = 'Aucune donnée pour cette période.';
+            return;
+          }
+          const tbody = document.querySelector('#dispo-table tbody');
+          tbody.innerHTML = '';
+          data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${row.mois}</td>
+              <td>${row.fonds_non_empruntes}</td>
+              <td>${row.remboursements_recus}</td>
+              <td>${row.total_disponible}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          document.getElementById('dispo-table').style.display = '';
+        })
+        .catch(() => {
+          document.getElementById('dispo-message').textContent = 'Erreur lors de la récupération des données.';
+        });
+    }
+  </script>
+</body>
+</html> 

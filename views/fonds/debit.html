@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Débiter un compte</title>
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../../styles/pretForm.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="../../index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="../../index.html">Accueil</a>
+        <a href="ajout.html">Fonds</a>
+      </div>
+    </div>
+  </nav>
+  <nav>
+    <ul style="display:flex;gap:1em;list-style:none;padding:0;margin:0 0 1em 0;">
+      <li><a href="ajout.html">Ajout de fonds</a></li>
+      <li><a href="debit.html">Débit de fonds</a></li>
+      <li><a href="liste.html">Liste des opérations</a></li>
+      <li><a href="total.html">Total des fonds</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <div class="main-content">
+      <h1>Débiter un compte</h1>
+      <form id="form-debit" onsubmit="return false;">
+        <label>Compte à débiter :
+          <select id="compte_id" required></select>
+        </label><br>
+        <label>Montant :
+          <input type="number" id="montant" min="0.01" step="0.01" required placeholder="Ex: 250.00">
+        </label><br>
+        <label>Description (optionnelle) :
+          <input type="text" id="description" placeholder="Ex: Retrait, achat, frais, etc.">
+        </label><br>
+        <button type="submit" onclick="ajouterDebit()">Effectuer le débit</button>
+      </form>
+      <div id="message"></div>
+    </div>
+  </div>
+  
+  <script>
+    function chargerComptes() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/Final/Projet_Final_S4/ws/comptes', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var comptes = JSON.parse(xhr.responseText);
+          var select = document.getElementById('compte_id');
+          select.innerHTML = '<option value="">-- Sélectionnez un compte --</option>';
+          comptes.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.compte_id;
+            opt.textContent = 'ID ' + c.compte_id + ' - ' + (c.nom_client || '') + ' (' + c.type_compte + ')';
+            select.appendChild(opt);
+          });
+        }
+      };
+      xhr.send();
+    }
+    
+    function ajouterDebit() {
+      var compte_id = document.getElementById('compte_id').value;
+      var montant = document.getElementById('montant').value;
+      var description = document.getElementById('description').value;
+      
+      if (!compte_id) {
+        var msg = document.getElementById('message');
+        msg.textContent = 'Veuillez sélectionner un compte.';
+        msg.style.color = 'red';
+        return;
+      }
+      
+      var params = 'compte_id=' + encodeURIComponent(compte_id) + '&montant=' + encodeURIComponent(montant) + '&description=' + encodeURIComponent(description);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/Final/Projet_Final_S4/ws/fonds/debit', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          var msg = document.getElementById('message');
+          try {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+              msg.textContent = 'Débit effectué avec succès !';
+              msg.style.color = 'green';
+              document.getElementById('form-debit').reset();
+              // Recharger la liste des comptes
+              chargerComptes();
+            } else {
+              msg.textContent = 'Erreur : ' + (res.error || 'Erreur inconnue');
+              msg.style.color = 'red';
+            }
+          } catch (e) {
+            msg.textContent = 'Erreur inattendue.';
+            msg.style.color = 'red';
+          }
+        }
+      };
+      xhr.send(params);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerComptes();
+    });
+  </script>
+</body>
+</html>

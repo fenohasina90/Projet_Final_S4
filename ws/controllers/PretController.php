@@ -68,7 +68,7 @@ class PretController {
             // Mettre à jour le statut du prêt
             Pret::updatePretStatus($pretId, $statut);
             
-            // Si approuvé, générer l'historique des mensualités
+            // Si approuvé, générer l'historique des mensualités et débiter les fonds
             if ($statut === 'Approuvé') {
                 $pret = Pret::getById($pretId);
                 if ($pret) {
@@ -86,6 +86,8 @@ class PretController {
                         $pret['date_debut'],
                         $pret['mois_delai'] ?? 0
                     );
+                    // Débiter les fonds globaux
+                    Pret::debiterFondsPourPret($pret['montant'], 'Déblocage fonds prêt ID ' . $pretId);
                 }
             }
             
@@ -131,6 +133,57 @@ class PretController {
             Flight::json($historique);
         } catch (Exception $e) {
             Flight::json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public static function payerMensualite() {
+        $data = Flight::request()->data;
+        $historiqueId = $data['historique_id'];
+        try {
+            Pret::payerMensualite($historiqueId);
+            Flight::json(['success' => true, 'message' => 'Mensualité payée']);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function getHistoriquePaiement() {
+        $clientId = Flight::request()->query->client_id;
+        try {
+            $data = Pret::getHistoriquePaiement($clientId);
+            Flight::json($data);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function getDisponibiliteEF() {
+        $dateDebut = Flight::request()->query->date_debut;
+        $dateFin = Flight::request()->query->date_fin;
+        try {
+            $data = Pret::getDisponibiliteEF($dateDebut, $dateFin);
+            Flight::json($data);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function enregistrerSimulation() {
+        $data = Flight::request()->data;
+        try {
+            $id = Pret::enregistrerSimulation($data);
+            Flight::json(['success' => true, 'message' => 'Simulation enregistrée', 'id' => $id]);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public static function getSimulations() {
+        try {
+            $simus = Pret::getSimulations();
+            Flight::json($simus);
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 }

@@ -19,6 +19,9 @@
         <a href="simulation.html">Simulation</a>
         <a href="interet.html">Intérêts</a>
         <a href="create_type_pret.html">Types de prêts</a>
+        <a href="views/fonds/ajout.html">Fonds</a>
+        <a href="ajout_fond.html">Ajout Fonds</a>
+        <a href="disponibilite_ef.html">Disponibilité EF</a>
       </div>
     </div>
   </nav>
@@ -33,14 +36,15 @@
     <label>Type de prêt :</label>
     <select id="type_pret" required></select><br><br>
     <label>Montant :</label>
-    <input type="number" id="montant" required><br><br>
+    <input type="number" id="montant" name="montant" required><br><br>
     <label>Durée (mois) :</label>
-    <input type="number" id="duree" required><br><br>
+    <input type="number" id="duree_mois" name="duree_mois" required><br><br>
     <label>Taux annuel (%) :</label>
     <input type="number" id="taux_annuel" step="0.01" required readonly><br><br>
     <button type="submit" class="btn-simuler">Simuler</button>
     <button type="button" class="btn" onclick="validerpret()">Valider</button>
   </form>
+  <div id="complement-form-container"></div>
   <div id="details">
     <p><strong>Montant :</strong> <span id="aff_montant"></span> Ar</p>
     <p><strong>Durée :</strong> <span id="aff_duree"></span> mois</p>
@@ -50,10 +54,62 @@
   </div>
   <div id="resultat"></div>
 
-  
+  <div id="sauvegarde-section" style="display:none; margin-top:2em;">
+    <button id="btn-sauvegarder-pret">Sauvegarder ce prêt</button>
+  </div>
+  <div id="form-sauvegarde-pret" style="display:none; margin-top:1em;">
+    <h3>Compléter et sauvegarder le prêt</h3>
+    <form id="sauvegardePretForm">
+      <label>Client :
+        <select id="client_id" required></select>
+      </label><br>
+      <label>Type de prêt :
+        <select id="type_pret_id" required></select>
+      </label><br>
+      <label>Montant :
+        <input type="number" id="montant" required readonly>
+      </label><br>
+      <label>Durée (mois) :
+        <input type="number" id="duree_mois" required readonly>
+      </label><br>
+      <label>Taux appliqué (%) :
+        <input type="number" id="taux_applique" required readonly>
+      </label><br>
+      <label>Assurance :
+        <input type="text" id="assurance" required>
+      </label><br>
+      <label>Délai avant remboursement (mois) :
+        <input type="number" id="mois_delai" min="0" value="0" required>
+      </label><br>
+      <input type="hidden" id="statut" value="En attente">
+      <button type="submit">Enregistrer le prêt</button>
+    </form>
+    <div id="sauvegarde-message"></div>
+  </div>
+
+  <div class="comparaison-simulations" style="display: flex; gap: 2em; margin-bottom: 2em;">
+    <div style="flex:1;">
+      <h3>Simulation 1</h3>
+      <select id="select-simu-1" onchange="afficherDetailsSimulation(1)">
+        <option value="">-- Sélectionner une simulation --</option>
+      </select>
+      <div id="details-simu-1" class="details-simu"></div>
+      <button id="btn-enregistrer-1" style="display:none;" onclick="enregistrerSimulationCommePret(1)">Utiliser cette simulation</button>
+    </div>
+    <div style="flex:1;">
+      <h3>Simulation 2</h3>
+      <select id="select-simu-2" onchange="afficherDetailsSimulation(2)">
+        <option value="">-- Sélectionner une simulation --</option>
+      </select>
+      <div id="details-simu-2" class="details-simu"></div>
+      <button id="btn-enregistrer-2" style="display:none;" onclick="enregistrerSimulationCommePret(2)">Utiliser cette simulation</button>
+    </div>
+  </div>
+
   <script>
   const apiBase = "http://localhost/Projet_Final_S4/ws";
   let typesPret = [];
+  let simulations = [];
   
   function ajax(method, url, data, callback) {
     const xhr = new XMLHttpRequest();
@@ -97,7 +153,7 @@
   
   function simuler() {
   const montant = document.getElementById('montant').value;
-  const duree = document.getElementById('duree').value;
+  const duree = document.getElementById('duree_mois').value;
   const taux_annuel = document.getElementById('taux_annuel').value;
   const type_pret = document.getElementById('type_pret').value;
   const type_pret_select = document.getElementById('type_pret');
@@ -118,33 +174,183 @@
   
   ajax("POST", "/simuler-mensualite-fixe", data, (response) => {
     document.getElementById('resultat').textContent = "Mensualité : " + response.mensualite + " Ar";
+    afficherSauvegardePret(montant, duree, taux_annuel);
   });
   }
 
-  function validerpret(){
-    const montant = document.getElementById('montant').value;
-    const duree = document.getElementById('duree').value;
-    const taux_annuel = document.getElementById('taux_annuel').value;
-    const type_pret = document.getElementById('type_pret').value;
+  function validerpret() {
+    // Affiche le formulaire complémentaire sans envoyer la requête d'insertion
+    afficherFormulaireComplementaire();
+  }
 
-    if (!montant || !duree || !taux_annuel || !type_pret) {
-      alert("Veuillez remplir tous les champs.");
+  function afficherSauvegardePret(montant, duree, taux) {
+    document.getElementById('sauvegarde-section').style.display = 'block';
+    document.getElementById('montant').value = montant;
+    document.getElementById('duree_mois').value = duree;
+    document.getElementById('taux_applique').value = taux;
+  }
+
+  if(document.getElementById('btn-sauvegarder-pret')) {
+    document.getElementById('btn-sauvegarder-pret').onclick = function() {
+      document.getElementById('form-sauvegarde-pret').style.display = 'block';
+      chargerClientsEtTypesPret();
+    };
+  }
+
+  function chargerClientsEtTypesPret() {
+    // Clients
+    ajax("GET", "/clients", null, (response) => {
+      const select = document.getElementById('client_id');
+      select.innerHTML = "";
+      response.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client.client_id;
+        option.textContent = client.nom;
+        select.appendChild(option);
+      });
+    });
+    // Types de prêt
+    ajax("GET", "/type-pret", null, (response) => {
+      const select = document.getElementById('type_pret_id');
+      select.innerHTML = "";
+      response.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.type_pret_id;
+        option.textContent = type.nom;
+        select.appendChild(option);
+      });
+    });
+  }
+
+  function chargerSimulations() {
+    ajax("GET", "/simulations", null, (data) => {
+      simulations = data;
+      const select1 = document.getElementById('select-simu-1');
+      const select2 = document.getElementById('select-simu-2');
+      [select1, select2].forEach(select => {
+        select.innerHTML = '<option value="">-- Sélectionner une simulation --</option>';
+        data.forEach(simu => {
+          const opt = document.createElement('option');
+          opt.value = simu.simulation_id;
+          opt.textContent = `#${simu.simulation_id} - ${simu.montant}€ sur ${simu.duree_mois} mois`;
+          select.appendChild(opt);
+        });
+      });
+    });
+  }
+
+  function afficherDetailsSimulation(num) {
+    const select = document.getElementById('select-simu-' + num);
+    const detailsDiv = document.getElementById('details-simu-' + num);
+    const btn = document.getElementById('btn-enregistrer-' + num);
+    const id = select.value;
+    if (!id) {
+      detailsDiv.innerHTML = '';
+      btn.style.display = 'none';
       return;
     }
+    const simu = simulations.find(s => s.simulation_id == id);
+    if (!simu) return;
+    detailsDiv.innerHTML = `
+      <ul>
+        <li><b>Montant :</b> ${simu.montant} €</li>
+        <li><b>Durée :</b> ${simu.duree_mois} mois</li>
+        <li><b>Taux appliqué :</b> ${simu.taux_applique} %</li>
+        <li><b>Résultat :</b> ${simu.resultat}</li>
+      </ul>
+    `;
+    btn.style.display = 'block';
+  }
 
-    const data = `montant=${encodeURIComponent(montant)}&duree=${encodeURIComponent(duree)}&taux_annuel=${encodeURIComponent(taux_annuel)}&type_pret=${encodeURIComponent(type_pret)}`;
-    
+  function enregistrerSimulationCommePret(num) {
+    const select = document.getElementById('select-simu-' + num);
+    const id = select.value;
+    if (!id) return;
+    const simu = simulations.find(s => s.simulation_id == id);
+    if (!simu) return;
+    document.getElementById('montant').value = simu.montant;
+    document.getElementById('duree_mois').value = simu.duree_mois;
+    if(document.getElementById('duree')) document.getElementById('duree').value = simu.duree_mois;
+    document.getElementById('taux_annuel').value = simu.taux_applique;
+    alert('Simulation copiée dans le formulaire de création de prêt !');
+  }
+
+  function afficherFormulaireComplementaire() {
+    if(document.getElementById('form-complement')) return;
+
+    const montant = document.getElementById('montant').value;
+    const duree = document.getElementById('duree_mois').value;
+    const taux = document.getElementById('taux_annuel').value;
+    const type_pret = document.getElementById('type_pret').value;
+    const type_pret_text = document.getElementById('type_pret').options[document.getElementById('type_pret').selectedIndex].text;
+
+    const form = document.createElement('form');
+    form.id = 'form-complement';
+    form.innerHTML = `
+      <h3>Compléter les informations du prêt</h3>
+      <label>Client :</label>
+      <select id="client_complement" required></select><br><br>
+      <label>Type de prêt :</label>
+      <input type="text" value="${type_pret_text}" readonly><br><br>
+      <label>Montant :</label>
+      <input type="number" value="${montant}" readonly><br><br>
+      <label>Durée (mois) :</label>
+      <input type="number" value="${duree}" readonly><br><br>
+      <label>Taux annuel (%) :</label>
+      <input type="number" value="${taux}" readonly><br><br>
+      <label>Assurance :</label>
+      <input type="text" id="assurance_complement" required><br><br>
+      <label>Délai avant remboursement (mois) :</label>
+      <input type="number" id="mois_delai_complement" min="0" value="0" required><br><br>
+      <input type="hidden" value="En attente" id="statut_complement">
+      <button type="submit">Compléter le prêt</button>
+      <div id="message_complement"></div>
+    `;
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      envoyerPretComplet();
+    };
+    document.getElementById('complement-form-container').appendChild(form);
+
+    ajax("GET", "/clients", null, (response) => {
+      const select = document.getElementById('client_complement');
+      select.innerHTML = "";
+      response.forEach(client => {
+        const option = document.createElement('option');
+        option.value = client.client_id;
+        option.textContent = client.nom;
+        select.appendChild(option);
+      });
+    });
+  }
+
+  function envoyerPretComplet() {
+    const client = document.getElementById('client_complement').value;
+    const montant = document.getElementById('montant').value;
+    const duree = document.getElementById('duree_mois').value;
+    const taux = document.getElementById('taux_annuel').value;
+    const type_pret = document.getElementById('type_pret').value;
+    const assurance = document.getElementById('assurance_complement').value;
+    const mois_delai = document.getElementById('mois_delai_complement').value;
+    const statut = document.getElementById('statut_complement').value;
+
+    if (!client || !montant || !duree || !taux || !type_pret || !assurance) {
+      document.getElementById('message_complement').textContent = "Veuillez remplir tous les champs.";
+      return;
+    }
+    const data = `client_id=${encodeURIComponent(client)}&type_pret_id=${encodeURIComponent(type_pret)}&montant=${encodeURIComponent(montant)}&duree_mois=${encodeURIComponent(duree)}&taux_applique=${encodeURIComponent(taux)}&assurance=${encodeURIComponent(assurance)}&mois_delai=${encodeURIComponent(mois_delai)}&statut=${encodeURIComponent(statut)}`;
     ajax("POST", "/valider-pret", data, (response) => {
       if (response.success) {
-        alert("Prêt validé avec succès !");
+        document.getElementById('message_complement').textContent = "Prêt complété avec succès !";
       } else {
-        alert("Erreur lors de la validation du prêt : " + response.message);
+        document.getElementById('message_complement').textContent = "Erreur : " + response.message;
       }
     });
   }
 
-
-
+  document.addEventListener('DOMContentLoaded', function() {
+    chargerSimulations();
+  });
 
   </script>
 </div>

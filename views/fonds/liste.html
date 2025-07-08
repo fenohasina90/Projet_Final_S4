@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des Dépôts</title>
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../../styles/pretForm.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="../../index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="../../index.html">Accueil</a>
+        <a href="ajout.html">Fonds</a>
+      </div>
+    </div>
+  </nav>
+  <nav>
+    <ul style="display:flex;gap:1em;list-style:none;padding:0;margin:0 0 1em 0;">
+      <li><a href="ajout.html">Ajout de fonds</a></li>
+      <li><a href="debit.html">Débit de fonds</a></li>
+      <li><a href="liste.html">Liste des opérations</a></li>
+      <li><a href="total.html">Total des fonds</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <div class="main-content">
+      <h1>Liste des Dépôts</h1>
+      
+      <div style="margin-bottom: 1rem; text-align: center;">
+        <button onclick="chargerDepots()" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+          Actualiser la liste
+        </button>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>ID Transaction</th>
+            <th>Compte</th>
+            <th>Client</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-depots">
+          <tr>
+            <td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">
+              Chargement des données...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <script>
+    function chargerDepots() {
+      var tbody = document.getElementById('tbody-depots');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">Chargement des données...</td></tr>';
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/Final/Projet_Final_S4/ws/fonds', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var depots = JSON.parse(xhr.responseText);
+            tbody.innerHTML = '';
+            
+            if (depots.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7f8c8d; font-style: italic;">Aucun dépôt trouvé.</td></tr>';
+              return;
+            }
+            
+            depots.forEach(function(d) {
+              var tr = document.createElement('tr');
+              tr.innerHTML =
+                '<td>' + d.transaction_id + '</td>' +
+                '<td>' + d.compte_id + ' (' + d.type_compte + ')</td>' +
+                '<td>' + d.nom_client + ' ' + d.prenom_client + '</td>' +
+                '<td style="font-weight: bold; color: #27ae60;">' + parseFloat(d.montant).toFixed(2) + ' €</td>' +
+                '<td>' + new Date(d.date_transaction).toLocaleDateString('fr-FR') + '</td>' +
+                '<td>' + (d.description || '<em style="color: #bdc3c7;">Aucune description</em>') + '</td>';
+              tbody.appendChild(tr);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #e74c3c;">Erreur lors du chargement des données.</td></tr>';
+          }
+        }
+      };
+      xhr.send();
+    }
+    
+    // Initialiser la page
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerDepots();
+    });
+  </script>
+</body>
+</html>

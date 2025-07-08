@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajout de Fonds</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
+  <style>
+    .fond-form-container { max-width: 500px; margin: 2em auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 2em; }
+    .fond-form-container h2 { margin-top: 0; }
+    .fond-form-container label { display: block; margin: 1em 0 0.5em; }
+    .fond-form-container input, .fond-form-container select { width: 100%; padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
+    .fond-form-container button { margin-top: 1em; width: 100%; }
+    .fond-form-container .message { margin-top: 1em; font-weight: bold; }
+    .fond-nav { display: flex; gap: 1em; margin-bottom: 2em; justify-content: center; }
+    .fond-nav a { color: #007bff; text-decoration: none; font-weight: 500; }
+    .fond-nav a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="views/fonds/ajout.html">Fonds</a>
+        <a href="ajout_fond.html">Ajout Fonds</a>
+      </div>
+    </div>
+  </nav>
+  <div class="fond-nav">
+    <a href="ajout_fond.html">Ajout de fonds</a>
+    <a href="debit_fond.html">Débit de fonds</a>
+    <a href="liste_fond.html">Liste des dépôts</a>
+    <a href="total_fond.html">Total des fonds</a>
+  </div>
+  <div class="fond-form-container">
+    <h2>Ajouter un dépôt sur un compte</h2>
+    <form id="form-fonds" onsubmit="event.preventDefault(); ajouterDepot();">
+      <label for="compte_id">Compte à créditer :</label>
+      <select id="compte_id" required>
+        <option value="">-- Sélectionnez un compte --</option>
+      </select>
+      <label for="montant">Montant :</label>
+      <input type="number" id="montant" min="0.01" step="0.01" required placeholder="Ex: 1500.50">
+      <label for="description">Description (optionnelle) :</label>
+      <input type="text" id="description" placeholder="Ex: Dépôt initial, salaire, etc.">
+      <button type="submit">Ajouter le dépôt</button>
+    </form>
+    <div id="message" class="message"></div>
+  </div>
+  <script>
+    // Charger dynamiquement la liste des comptes
+    function chargerComptes() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'ws/comptes', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var comptes = JSON.parse(xhr.responseText);
+          var select = document.getElementById('compte_id');
+          select.innerHTML = '<option value="">-- Sélectionnez un compte --</option>';
+          comptes.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.compte_id;
+            opt.textContent = 'ID ' + c.compte_id + ' - ' + (c.nom_client || '') + ' (' + c.type_compte + ')';
+            select.appendChild(opt);
+          });
+        }
+      };
+      xhr.send();
+    }
+    function ajouterDepot() {
+      var compte_id = document.getElementById('compte_id').value;
+      var montant = document.getElementById('montant').value;
+      var description = document.getElementById('description').value;
+      var msg = document.getElementById('message');
+      if (!compte_id) {
+        msg.textContent = 'Veuillez sélectionner un compte.';
+        msg.style.color = 'red';
+        return;
+      }
+      var params = 'compte_id=' + encodeURIComponent(compte_id) + '&montant=' + encodeURIComponent(montant) + '&description=' + encodeURIComponent(description);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'ws/fonds', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          try {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+              msg.textContent = 'Dépôt ajouté avec succès !';
+              msg.style.color = 'green';
+              document.getElementById('form-fonds').reset();
+              chargerComptes();
+            } else {
+              msg.textContent = res.error || 'Erreur lors de l\'ajout du dépôt.';
+              msg.style.color = 'red';
+            }
+          } catch (e) {
+            msg.textContent = 'Erreur inattendue.';
+            msg.style.color = 'red';
+          }
+        }
+      };
+      xhr.send(params);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerComptes();
+    });
+  </script>
+</body>
+</html> 

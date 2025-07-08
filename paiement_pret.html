@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des paiements de prêts</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
+  <style>
+    .paid { color: green; }
+    .unpaid { color: red; }
+    .reste { font-weight: bold; }
+    .mensualite-table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    .mensualite-table th, .mensualite-table td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    .mensualite-table th { background: #f5f5f5; }
+    .pay-btn { background: #007bff; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+    .pay-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .ef-table { width: 100%; border-collapse: collapse; margin-top: 1em; margin-bottom: 2em; }
+    .ef-table th, .ef-table td { border: 1px solid #aaa; padding: 6px; text-align: center; }
+    .ef-table th { background: #e0e0e0; }
+    .ef-section { background: #f9f9f9; padding: 1em; border-radius: 8px; margin-bottom: 2em; }
+    .ef-section h3 { margin-top: 0; }
+    .ef-filter { margin-bottom: 1em; }
+  </style>
+</head>
+<body>
+  <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+  <nav class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">Gestion Prêts</a>
+    <div class="sidebar-links">
+      <a href="index.html">Accueil</a>
+      <a href="pretForm.html">Créer un prêt</a>
+      <a href="validation_pret.html">Validation</a>
+      <a href="historique_pret.html">Historique</a>
+      <a href="simulation.html">Simulation</a>
+      <a href="interet.html">Intérêts</a>
+      <a href="create_type_pret.html">Types de prêts</a>
+      <a href="views/fonds/ajout.html">Fonds</a>
+      <a href="ajout_fond.html">Ajout Fonds</a>
+      <a href="paiement_pret.html">Paiements</a>
+      <a href="ajout_fond.html">Ajout Fonds</a>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Gestion des paiements de prêts</h2>
+        <p>Filtrer par utilisateur et gérer les paiements des mensualités</p>
+      </div>
+      <!-- Section EF Disponibilité -->
+      <div class="ef-section">
+        <h3>Montant à disposition de l'établissement financier (EF)</h3>
+        <form id="efFilterForm" class="ef-filter" onsubmit="event.preventDefault(); loadDisponibiliteEF();">
+          <label for="efDateDebut">Début :</label>
+          <input type="month" id="efDateDebut" required>
+          <label for="efDateFin">Fin :</label>
+          <input type="month" id="efDateFin" required>
+          <button type="submit">Afficher</button>
+        </form>
+        <div id="efTable"></div>
+      </div>
+      <!-- Fin Section EF -->
+      <label for="clientFilter">Filtrer par client :</label>
+      <select id="clientFilter">
+        <option value="">Tous</option>
+      </select>
+      <div id="paiementTable"></div>
+      <div id="message"></div>
+    </div>
+  </div>
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    let clients = [];
+
+    function ajax(method, url, data, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open(method, apiBase + url, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            callback(JSON.parse(xhr.responseText));
+          } else {
+            document.getElementById('message').textContent = "Erreur lors de la requête";
+          }
+        }
+      };
+      xhr.send(data);
+    }
+
+    // --- EF Disponibilité ---
+    function loadDisponibiliteEF() {
+      const dateDebut = document.getElementById('efDateDebut').value;
+      const dateFin = document.getElementById('efDateFin').value;
+      if (!dateDebut || !dateFin) return;
+      ajax("GET", `/disponibilite-ef?date_debut=${dateDebut}&date_fin=${dateFin}`, null, (data) => {
+        renderEFTable(data);
+      });
+    }
+    function renderEFTable(data) {
+      if (!data || data.length === 0) {
+        document.getElementById('efTable').innerHTML = '<p>Aucune donnée pour cette période.</p>';
+        return;
+      }
+      let html = `<table class='ef-table'><thead><tr><th>Mois</th><th>Fonds non empruntés (€)</th><th>Remboursements reçus (€)</th><th>Total à disposition (€)</th></tr></thead><tbody>`;
+      data.forEach(row => {
+        html += `<tr><td>${row.mois}</td><td>${row.fonds_non_empruntes}</td><td>${row.remboursements_recus}</td><td><b>${row.total_disponible}</b></td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('efTable').innerHTML = html;
+    }
+    // --- Fin EF Disponibilité ---
+
+    function loadClients() {
+      ajax("GET", "/clients", null, (response) => {
+        clients = response;
+        const select = document.getElementById('clientFilter');
+        response.forEach(client => {
+          const option = document.createElement('option');
+          option.value = client.client_id;
+          option.textContent = client.nom;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function loadPaiements(clientId = "") {
+      let url = "/historique-paiement";
+      if (clientId) url += `?client_id=${clientId}`;
+      ajax("GET", url, null, (data) => {
+        renderPaiementTable(data);
+      });
+    }
+
+    function renderPaiementTable(data) {
+      let html = "";
+      if (!data || data.length === 0) {
+        html = "<p>Aucun prêt trouvé.</p>";
+        document.getElementById('paiementTable').innerHTML = html;
+        return;
+      }
+      data.forEach(pret => {
+        html += `<div style='margin-bottom:2em;'>`;
+        html += `<h3>Prêt #${pret.pret_id} - Client : <b>${pret.client_nom}</b> | Montant : <b>${pret.montant} €</b> | Durée : <b>${pret.duree_mois} mois</b> | Taux : <b>${pret.taux_applique}%</b> | <span class='reste'>Reste à payer : ${pret.reste_a_payer.toFixed(2)} €</span></h3>`;
+        html += `<table class='mensualite-table'><thead><tr><th>Mois</th><th>Mensualité (€)</th><th>Statut paiement</th><th>Date paiement</th><th>Action</th></tr></thead><tbody>`;
+        pret.mensualites.forEach(mensu => {
+          html += `<tr>`;
+          html += `<td>${mensu.mois}</td>`;
+          html += `<td>${mensu.montant_mensualite}</td>`;
+          html += `<td class='${mensu.statut_paiement === 'Payé' ? 'paid' : 'unpaid'}'>${mensu.statut_paiement}</td>`;
+          html += `<td>${mensu.date_paiement ? mensu.date_paiement : '-'}</td>`;
+          html += `<td>`;
+          if (mensu.statut_paiement !== 'Payé') {
+            html += `<button class='pay-btn' onclick='payerMensualite(${mensu.historique_id}, this)'>Payer</button>`;
+          } else {
+            html += `<button class='pay-btn' disabled>Payé</button>`;
+          }
+          html += `</td>`;
+          html += `</tr>`;
+        });
+        html += `</tbody></table></div>`;
+      });
+      document.getElementById('paiementTable').innerHTML = html;
+    }
+
+    function payerMensualite(historiqueId, btn) {
+      btn.disabled = true;
+      ajax("POST", "/payer-mensualite", `historique_id=${historiqueId}`, (response) => {
+        if (response.success) {
+          document.getElementById('message').textContent = "Mensualité payée !";
+          // Refresh table
+          const clientId = document.getElementById('clientFilter').value;
+          loadPaiements(clientId);
+        } else {
+          document.getElementById('message').textContent = "Erreur : " + response.message;
+        }
+      });
+    }
+
+    document.getElementById('clientFilter').addEventListener('change', function() {
+      loadPaiements(this.value);
+    });
+
+    // Initialisation
+    window.onload = function() {
+      loadClients();
+      loadPaiements();
+      // Valeurs par défaut pour le filtre EF : 12 derniers mois
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+      const debut = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const yyyyDebut = debut.getFullYear();
+      const mmDebut = (debut.getMonth() + 1).toString().padStart(2, '0');
+      document.getElementById('efDateDebut').value = `${yyyyDebut}-${mmDebut}`;
+      document.getElementById('efDateFin').value = `${yyyy}-${mm}`;
+      loadDisponibiliteEF();
+    };
+
+    function toggleSidebar() {
+      var sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
+  </script>
+</body>
+</html> 

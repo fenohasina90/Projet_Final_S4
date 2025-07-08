@@ -143,4 +143,29 @@ class Fonds {
             return ["success" => false, "error" => "Erreur lors de l'ajout du débit : " . $e->getMessage()];
         }
     }
+
+    public function create($data) {
+        try {
+            $this->db->beginTransaction();
+            // Ajout dans fonds
+            $stmt = $this->db->prepare("INSERT INTO fonds (compte_id, montant, description, date_operation) VALUES (?, ?, ?, NOW())");
+            $stmt->execute([
+                $data['compte_id'],
+                $data['montant'],
+                $data['description'] ?? null
+            ]);
+            // Ajout dans soldes
+            $stmt2 = $this->db->prepare("INSERT INTO soldes (compte_id, date_solde, montant, type_solde, description) VALUES (?, CURRENT_DATE, ?, 'Crédit', ?)");
+            $stmt2->execute([
+                $data['compte_id'],
+                $data['montant'],
+                $data['description'] ?? null
+            ]);
+            $this->db->commit();
+            return ["success" => true];
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return ["success" => false, "error" => $e->getMessage()];
+        }
+    }
 } 

@@ -44,4 +44,18 @@ class FondsController {
             Flight::json(["success" => false, "error" => $resultat['error']]);
         }
     }
+
+    public function create() {
+        $data = Flight::request()->data;
+        try {
+            $result = $this->fondsModel->create($data);
+            if ($result['success']) {
+                Flight::json(['success' => true, 'message' => 'Dépôt ajouté avec succès']);
+            } else {
+                Flight::json(['success' => false, 'error' => $result['error']]);
+            }
+        } catch (Exception $e) {
+            Flight::json(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
 } 

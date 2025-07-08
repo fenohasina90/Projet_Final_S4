@@ -1,27 +1,24 @@
 <?php
 require_once __DIR__ . '/../controllers/FondsController.php';
+require_once __DIR__ . '/../db.php';
 
 // Injection de la dépendance DB comme pour les autres modules
 Flight::route('POST /fonds', function() {
-    global $db;
-    $controller = new FondsController($db);
-    $controller->ajouterDepot();
+    $controller = new FondsController(getDB());
+    $controller->create();
 });
 
 Flight::route('GET /fonds', function() {
-    global $db;
-    $controller = new FondsController($db);
-    $controller->getDepots();
+    $controller = new FondsController(getDB());
+    $controller->getAll();
 });
 
 Flight::route('GET /fonds/total', function() {
-    global $db;
-    $controller = new FondsController($db);
+    $controller = new FondsController(getDB());
     $controller->getTotaux();
 });
 
 Flight::route('POST /fonds/debit', function() {
-    global $db;
-    $controller = new FondsController($db);
+    $controller = new FondsController(getDB());
     $controller->ajouterDebit();
 }); 

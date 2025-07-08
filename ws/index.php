@@ -6,5 +6,7 @@ require 'routes/Pret_routes.php';
 require 'routes/Utilisateurs_route.php';
 require 'routes/Client_routes.php';
 require 'routes/Interet_routes.php';
-
+require 'routes/TypePret_routes.php';
+require 'routes/comptes_routes.php';
+require 'routes/fonds_routes.php';
 Flight::start();

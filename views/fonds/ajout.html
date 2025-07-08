@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajout de fonds</title>
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="../../styles/pretForm.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="../../index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="../../index.html">Accueil</a>
+        <a href="ajout.html">Fonds</a>
+      </div>
+    </div>
+  </nav>
+  <nav>
+    <ul style="display:flex;gap:1em;list-style:none;padding:0;margin:0 0 1em 0;">
+      <li><a href="ajout.html">Ajout de fonds</a></li>
+      <li><a href="debit.html">Débit de fonds</a></li>
+      <li><a href="liste.html">Liste des opérations</a></li>
+      <li><a href="total.html">Total des fonds</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <nav>
+      <a href="/index.html">Dashboard</a>
+      <a href="/pretForm.html">Créer un prêt</a>
+      <a href="/validation_pret.html">Validation prêt</a>
+      <a href="/historique_pret.html">Historique prêt</a>
+      <a href="/interet.html">Calcul d'intérêt</a>
+      <a href="/create_type_pret.html">Créer type de prêt</a>
+      <a href="/test_mois_delai.html">Test mois/délai</a>
+      <a href="/Pret.html">Liste des prêts</a>
+      <a href="/ws/views/fonds/ajout.html">Ajout de fonds</a>
+      <a href="/ws/views/fonds/debit.html">Débit de fonds</a>
+      <a href="/ws/views/fonds/liste.html">Liste des dépôts</a>
+      <a href="/ws/views/fonds/total.html">Total des fonds</a>
+    </nav>
+    <div class="main-content">
+      <h1>Ajout de Fonds (Dépôt)</h1>
+      <form id="form-fonds" onsubmit="return false;">
+        <label>Compte à créditer :
+          <select id="compte_id" required></select>
+        </label><br>
+        <label>Montant :
+          <input type="number" id="montant" min="0.01" step="0.01" required placeholder="Ex: 1500.50">
+        </label><br>
+        <label>Description (optionnelle) :
+          <input type="text" id="description" placeholder="Ex: Dépôt initial, salaire, etc.">
+        </label><br>
+        <button type="submit" onclick="ajouterDepot()">Ajouter le dépôt</button>
+      </form>
+      <div id="message"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Charger dynamiquement la liste des comptes
+    function chargerComptes() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/Final/Projet_Final_S4/ws/comptes', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var comptes = JSON.parse(xhr.responseText);
+          if (comptes.length > 0) {
+            console.log('Première donnée reçue:', comptes[0]); // TEST VISUEL
+            var testDiv = document.createElement('div');
+            testDiv.textContent = 'Première donnée reçue : ' + JSON.stringify(comptes[0]);
+            testDiv.style.color = 'green';
+            document.body.insertBefore(testDiv, document.body.children[2]);
+          } else {
+            console.log('Aucune donnée reçue');
+            var msg = document.createElement('div');
+            msg.textContent = 'Aucune donnée reçue.';
+            msg.style.color = 'red';
+            document.body.insertBefore(msg, document.body.children[2]);
+          }
+          var select = document.getElementById('compte_id');
+          select.innerHTML = '<option value="">-- Sélectionnez un compte --</option>';
+          comptes.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.compte_id;
+            opt.textContent = 'ID ' + c.compte_id + ' - ' + (c.nom_client || '') + ' (' + c.type_compte + ')';
+            select.appendChild(opt);
+          });
+        }
+      };
+      xhr.send();
+    }
+
+    function ajouterDepot() {
+      var compte_id = document.getElementById('compte_id').value;
+      var montant = document.getElementById('montant').value;
+      var description = document.getElementById('description').value;
+      
+      if (!compte_id) {
+        var msg = document.getElementById('message');
+        msg.textContent = 'Veuillez sélectionner un compte.';
+        msg.style.color = 'red';
+        return;
+      }
+      
+      var params = 'compte_id=' + encodeURIComponent(compte_id) + '&montant=' + encodeURIComponent(montant) + '&description=' + encodeURIComponent(description);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/Final/Projet_Final_S4/ws/fonds', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          var msg = document.getElementById('message');
+          try {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+              msg.textContent = 'Dépôt ajouté avec succès !';
+              msg.style.color = 'green';
+              document.getElementById('form-fonds').reset();
+              // Recharger la liste des comptes
+              chargerComptes();
+            } else {
+              // Rediriger vers la page d'erreur avec le message
+              var erreurMsg = res.error || 'Erreur inconnue';
+              window.location.href = 'erreur.html?msg=' + encodeURIComponent(erreurMsg);
+            }
+          } catch (e) {
+            window.location.href = 'erreur.html?msg=' + encodeURIComponent('Erreur inattendue.');
+          }
+        }
+      };
+      xhr.send(params);
+    }
+
+    // Initialiser la page
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerComptes();
+    });
+  </script>
+</body>
+</html>

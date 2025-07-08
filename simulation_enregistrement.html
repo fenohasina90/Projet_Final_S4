@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enregistrement Simulation de Prêt</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
+  <style>
+    .container { max-width: 600px; margin: 2em auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 2em; }
+    h2 { margin-top: 0; }
+    label { display: block; margin: 1em 0 0.5em; }
+    input, select { width: 100%; padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; }
+    button { margin-top: 1em; width: 100%; }
+    .message { margin-top: 1em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="simulation_enregistrement.html">Enregistrer Simulation</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Enregistrer une simulation de prêt</h2>
+    <form id="form-simu-enreg" onsubmit="event.preventDefault(); enregistrerSimulation();">
+      <label>Type de prêt :</label>
+      <select id="type_pret_id" required></select>
+      <label>Montant :</label>
+      <input type="number" id="montant" required>
+      <label>Durée (mois) :</label>
+      <input type="number" id="duree_mois" required>
+      <label>Taux appliqué (%) :</label>
+      <input type="number" id="taux_applique" step="0.01" required readonly>
+      <label>Résultat simulation (mensualité, etc.) :</label>
+      <input type="text" id="resultat" readonly>
+      <button type="button" onclick="simulerMensualite()">Simuler</button>
+      <button type="submit">Enregistrer la simulation</button>
+    </form>
+    <div id="message"></div>
+  </div>
+  <script>
+    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    function chargerClientsEtTypesPret() {
+      // Clients
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', apiBase + '/clients', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var response = JSON.parse(xhr.responseText);
+          var select = document.getElementById('client_id');
+          select.innerHTML = '';
+          response.forEach(function(client) {
+            var option = document.createElement('option');
+            option.value = client.client_id;
+            option.textContent = client.nom;
+            select.appendChild(option);
+          });
+        }
+      };
+      xhr.send();
+      // Types de prêt
+      var xhr2 = new XMLHttpRequest();
+      xhr2.open('GET', apiBase + '/type-pret', true);
+      xhr2.onreadystatechange = function() {
+        if (xhr2.readyState === 4 && xhr2.status === 200) {
+          var response = JSON.parse(xhr2.responseText);
+          var select = document.getElementById('type_pret_id');
+          select.innerHTML = '';
+          response.forEach(function(type, idx) {
+            var option = document.createElement('option');
+            option.value = type.type_pret_id;
+            option.textContent = type.nom;
+            option.setAttribute('data-taux', type.taux_annuel);
+            select.appendChild(option);
+            if (idx === 0) {
+              document.getElementById('taux_applique').value = type.taux_annuel;
+            }
+          });
+          // Met à jour le taux appliqué lors du changement
+          select.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            document.getElementById('taux_applique').value = selected.getAttribute('data-taux');
+          });
+        }
+      };
+      xhr2.send();
+    }
+    function simulerMensualite() {
+      var montant = document.getElementById('montant').value;
+      var duree = document.getElementById('duree_mois').value;
+      var taux = document.getElementById('taux_applique').value;
+      if (!montant || !duree || !taux) {
+        document.getElementById('resultat').value = '';
+        return;
+      }
+      var data = `montant=${encodeURIComponent(montant)}&duree=${encodeURIComponent(duree)}&taux_annuel=${encodeURIComponent(taux)}`;
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', apiBase + '/simuler-mensualite-fixe', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var response = JSON.parse(xhr.responseText);
+          document.getElementById('resultat').value = response.mensualite ? ('Mensualité : ' + response.mensualite + ' Ar') : '';
+        }
+      };
+      xhr.send(data);
+    }
+    function enregistrerSimulation() {
+      var data =
+        '&type_pret_id=' + encodeURIComponent(document.getElementById('type_pret_id').value) +
+        '&montant=' + encodeURIComponent(document.getElementById('montant').value) +
+        '&duree_mois=' + encodeURIComponent(document.getElementById('duree_mois').value) +
+        '&taux_applique=' + encodeURIComponent(document.getElementById('taux_applique').value) +
+        '&resultat=' + encodeURIComponent(document.getElementById('resultat').value);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', apiBase + '/enregistrer-simulation', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          var msg = document.getElementById('message');
+          try {
+            var res = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && res.success) {
+              msg.textContent = 'Simulation enregistrée avec succès !';
+              msg.style.color = 'green';
+              document.getElementById('form-simu-enreg').reset();
+            } else {
+              msg.textContent = res.message || res.error || 'Erreur lors de l\'enregistrement.';
+              msg.style.color = 'red';
+            }
+          } catch (e) {
+            msg.textContent = 'Erreur inattendue.';
+            msg.style.color = 'red';
+          }
+        }
+      };
+      xhr.send(data);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerClientsEtTypesPret();
+    });
+  </script>
+</body>
+</html> 

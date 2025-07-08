@@ -8,18 +8,20 @@
   <link rel="stylesheet" href="styles/validation_pret.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="navbar-container">
-      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
-      <div class="navbar-links">
-        <a href="index.html">Accueil</a>
-        <a href="pretForm.html">Créer un prêt</a>
-        <a href="validation_pret.html">Validation</a>
-        <a href="historique_pret.html">Historique</a>
-        <a href="simulation.html">Simulation</a>
-        <a href="interet.html">Intérêts</a>
-        <a href="create_type_pret.html">Types de prêts</a>
-      </div>
+  <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+  <nav class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">Gestion Prêts</a>
+    <div class="sidebar-links">
+      <a href="index.html">Accueil</a>
+      <a href="pretForm.html">Créer un prêt</a>
+      <a href="validation_pret.html">Validation</a>
+      <a href="historique_pret.html">Historique</a>
+      <a href="simulation.html">Simulation</a>
+      <a href="interet.html">Intérêts</a>
+      <a href="create_type_pret.html">Types de prêts</a>
+      <a href="views/fonds/ajout.html">Fonds</a>
+      <a href="ajout_fond.html">Ajout Fonds</a>
+      <a href="disponibilite_ef.html">Disponibilité EF</a>
     </div>
   </nav>
   <div class="container">
@@ -28,41 +30,41 @@
         <h2>Validation des Prêts</h2>
         <p>Validez et approuvez les demandes de prêts en attente</p>
       </div>
-  
-  <div class="filter-section">
-    <label>Filtrer par client :</label>
-    <select id="filter-client">
-      <option value="">Tous les clients</option>
-    </select>
-    <button onclick="loadPrets()">Filtrer</button>
-  </div>
-
-  <table id="prets-table">
-    <thead>
-      <tr>
-        <th>ID Prêt</th>
-        <th>Client</th>
-        <th>Type de Prêt</th>
-        <th>Montant</th>
-        <th>Durée (mois)</th>
-        <th>Taux (%)</th>
-        <th>Assurance</th>
-        <th>Délai (mois)</th>
-        <th>Date de début</th>
-        <th>Début remboursement</th>
-        <th>Statut</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="prets-tbody">
-    </tbody>
-  </table>
-
-  <div id="message"></div>
+      <div class="filter-section">
+        <label>Filtrer par client :</label>
+        <select id="filter-client">
+          <option value="">Tous les clients</option>
+        </select>
+        <button onclick="loadPrets()">Filtrer</button>
+      </div>
+      <table id="prets-table">
+        <thead>
+          <tr>
+            <th>ID Prêt</th>
+            <th>Client</th>
+            <th>Type de Prêt</th>
+            <th>Montant</th>
+            <th>Durée (mois)</th>
+            <th>Taux (%)</th>
+            <th>Assurance</th>
+            <th>Délai (mois)</th>
+            <th>Date de début</th>
+            <th>Début remboursement</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="prets-tbody">
+        </tbody>
+      </table>
+      <div id="message"></div>
     </div>
   </div>
-
   <script>
+    function toggleSidebar() {
+      var sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
     const apiBase = "http://localhost/Projet_Final_S4/ws";
     let allPrets = [];
     let allClients = [];

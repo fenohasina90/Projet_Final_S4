@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des dépôts</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/pretForm.css">
+  <style>
+    .fond-nav { display: flex; gap: 1em; margin-bottom: 2em; justify-content: center; }
+    .fond-nav a { color: #007bff; text-decoration: none; font-weight: 500; }
+    .fond-nav a:hover { text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="views/fonds/ajout.html">Fonds</a>
+        <a href="ajout_fond.html">Ajout Fonds</a>
+      </div>
+    </div>
+  </nav>
+  <div class="fond-nav">
+    <a href="ajout_fond.html">Ajout de fonds</a>
+    <a href="debit_fond.html">Débit de fonds</a>
+    <a href="liste_fond.html">Liste des dépôts</a>
+    <a href="total_fond.html">Total des fonds</a>
+  </div>
+  <div class="fond-form-container">
+    <h2>Liste des dépôts effectués</h2>
+    <table id="table-fonds">
+      <thead>
+        <tr>
+          <th>ID Dépôt</th>
+          <th>Compte</th>
+          <th>Client</th>
+          <th>Type de compte</th>
+          <th>Montant (€)</th>
+          <th>Description</th>
+          <th>Date</th>
+          <th>Solde après dépôt (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <script>
+    // Récupère la liste des dépôts et le solde courant de chaque compte
+    function chargerDepots() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'ws/fonds', true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var depots = JSON.parse(xhr.responseText);
+          var tbody = document.querySelector('#table-fonds tbody');
+          tbody.innerHTML = '';
+          depots.forEach(function(d) {
+            // On suppose que l'API retourne le solde courant dans d.solde (sinon, il faudra un second appel AJAX)
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${d.transaction_id || d.id || ''}</td>
+              <td>${d.compte_id}</td>
+              <td>${(d.nom_client || '') + ' ' + (d.prenom_client || '')}</td>
+              <td>${d.type_compte || ''}</td>
+              <td>${d.montant}</td>
+              <td>${d.description || ''}</td>
+              <td>${d.date_transaction || d.date_operation || ''}</td>
+              <td>${d.solde !== undefined ? d.solde : '<i>Non dispo</i>'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      };
+      xhr.send();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      chargerDepots();
+    });
+  </script>
+</body>
+</html> 

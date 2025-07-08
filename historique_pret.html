@@ -35,18 +35,20 @@
   </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="navbar-container">
-      <a href="index.html" class="navbar-logo">Gestion Prêts</a>
-      <div class="navbar-links">
-        <a href="index.html">Accueil</a>
-        <a href="pretForm.html">Créer un prêt</a>
-        <a href="validation_pret.html">Validation</a>
-        <a href="historique_pret.html">Historique</a>
-        <a href="simulation.html">Simulation</a>
-        <a href="interet.html">Intérêts</a>
-        <a href="create_type_pret.html">Types de prêts</a>
-      </div>
+  <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+  <nav class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">Gestion Prêts</a>
+    <div class="sidebar-links">
+      <a href="index.html">Accueil</a>
+      <a href="pretForm.html">Créer un prêt</a>
+      <a href="validation_pret.html">Validation</a>
+      <a href="historique_pret.html">Historique</a>
+      <a href="simulation.html">Simulation</a>
+      <a href="interet.html">Intérêts</a>
+      <a href="create_type_pret.html">Types de prêts</a>
+      <a href="views/fonds/ajout.html">Fonds</a>
+      <a href="ajout_fond.html">Ajout Fonds</a>
+      <a href="disponibilite_ef.html">Disponibilité EF</a>
     </div>
   </nav>
   <div class="container">
@@ -179,6 +181,11 @@
       loadClients();
       loadHistorique();
     };
+
+    function toggleSidebar() {
+      var sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
   </script>
 </body>
 </html> 

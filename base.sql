@@ -124,7 +124,30 @@ CREATE TABLE historique_pret (
     pret_id INT,
     mois DATE NOT NULL,
     montant_mensualite DECIMAL(10, 2),
+    statut_paiement VARCHAR(20) DEFAULT 'Non payé',
+    date_paiement DATE,
     FOREIGN KEY (pret_id) REFERENCES prets(pret_id)
 );
-    -- statut_paiement VARCHAR(20) DEFAULT 'Non payé',
-    -- date_paiement DATE,  -- date réelle de paiement
+
+CREATE TABLE fonds (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    compte_id INT,
+    montant DECIMAL(10,2) NOT NULL,
+    description VARCHAR(255),
+    date_operation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (compte_id) REFERENCES comptes(compte_id)
+);
+
+CREATE TABLE simulation (
+    simulation_id INT AUTO_INCREMENT PRIMARY KEY,
+    type_pret_id INT,
+    montant DECIMAL(10,2),
+    duree_mois INT,
+    taux_applique DECIMAL(5,2),
+    resultat VARCHAR(255),
+    date_simulation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (type_pret_id) REFERENCES types_pret(type_pret_id)
+);
+
+
+alter Table historique_pret VARCHAR(20) DEFAULT 'Non payé';
