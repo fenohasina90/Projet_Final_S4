@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Erreur Fonds</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <a href="ajout.html">Ajout de fonds</a>
+    <a href="debit.html">Débit de fonds</a>
+    <a href="liste.html">Liste des dépôts</a>
+    <a href="total.html">Total des fonds</a>
+  </nav>
+  
+  <h1>Erreur lors de l'opération</h1>
+  
+  <div style="text-align: center; margin: 2rem 0;">
+    <div style="font-size: 4rem; color: #e74c3c; margin-bottom: 1rem;">⚠️</div>
+    <div id="erreur"></div>
+  </div>
+  
+  <div style="text-align: center; margin-top: 2rem;">
+    <button onclick="window.history.back()" style="margin-right: 1rem;">
+      ← Retour
+    </button>
+    <button onclick="window.location.href='ajout.html'" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);">
+      Nouvelle opération
+    </button>
+  </div>
+  
+  <script>
+    // Récupérer le message d'erreur depuis l'URL
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+    
+    var msg = getParam('msg') || 'Une erreur inattendue s\'est produite.';
+    document.getElementById('erreur').textContent = msg;
+    
+    // Ajouter un délai avant de permettre le retour automatique
+    setTimeout(function() {
+      var autoReturn = document.createElement('div');
+      autoReturn.innerHTML = '<small style="color: #7f8c8d; font-style: italic;">Vous serez automatiquement redirigé dans <span id="countdown">10</span> secondes...</small>';
+      autoReturn.style.textAlign = 'center';
+      autoReturn.style.marginTop = '2rem';
+      document.body.appendChild(autoReturn);
+      
+      var countdown = 10;
+      var timer = setInterval(function() {
+        countdown--;
+        var countdownEl = document.getElementById('countdown');
+        if (countdownEl) {
+          countdownEl.textContent = countdown;
+        }
+        if (countdown <= 0) {
+          clearInterval(timer);
+          window.history.back();
+        }
+      }, 1000);
+    }, 2000);
+  </script>
+</body>
+</html>

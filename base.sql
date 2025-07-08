@@ -102,6 +102,26 @@ CREATE TABLE transactions (
     ))
 );
 
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    compte_id INT,
+    montant DECIMAL(12, 2) NOT NULL,
+    type_transaction VARCHAR(50),
+    date_transaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    description TEXT,
+    pret_id INT,
+    FOREIGN KEY (compte_id) REFERENCES comptes(compte_id),
+    FOREIGN KEY (pret_id) REFERENCES prets(pret_id),
+    CHECK (type_transaction IN (
+        'Depot',
+        'Retrait',
+        'Virement',
+        'Prelevement',
+        'Remboursement'
+    ))
+);
+
+
 CREATE TABLE taux_interet (
     taux_id INT AUTO_INCREMENT PRIMARY KEY,
     type_produit VARCHAR(50) NOT NULL,
