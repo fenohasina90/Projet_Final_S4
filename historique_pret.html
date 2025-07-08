@@ -35,6 +35,23 @@
   </style>
 </head>
 <body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">Gestion Banque</a>
+      <div class="navbar-links">
+        <a href="index.html">Accueil</a>
+        <a href="pretForm.html">Créer un prêt</a>
+        <a href="validation_pret.html">Validation</a>
+        <a href="historique_pret.html">Historique</a>
+        <a href="simulation.html">Simulation</a>
+        <a href="interet.html">Intérêts</a>
+        <a href="create_type_pret.html">Types de prêts</a>
+        <a href="ajout_fond.html">Ajout Fonds</a>
+        <a href="simulation_enregistrement.html">Enregistrer Simulation</a>
+        <a href="disponibilite_ef.html">Disponibilité EF</a>
+      </div>
+    </div>
+  </nav>
   <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
   <nav class="sidebar" id="sidebar">
     <a href="index.html" class="sidebar-logo">Gestion Prêts</a>
@@ -76,7 +93,7 @@
   </div>
 
   <script>
-    const apiBase = "http://localhost/Projet_Final_S4/ws";
+    const apiBase = "http://localhost/Final/Projet_Final_S4/ws/ws";
     let allClients = [];
 
     function ajax(method, url, data, callback) {
